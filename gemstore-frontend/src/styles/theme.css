@@ -1,0 +1,116 @@
+/* src/styles/theme.css */
+
+/* LIGHT MODE (default) */
+:root {
+  /* backgrounds */
+  --bg: #ffffff;
+  --bg-elevated: #ffffff;
+  --bg-subtle: #ffffff;
+
+  /* borders */
+  --border-soft: #e5e7eb;
+  --border-strong: #e5e7eb;
+
+  /* text */
+  --text-main: #111827;
+  --text-muted: #6b7280;
+  --text-subtle: #9ca3af;
+
+  /* inputs/cards */
+  --input-bg: #ffffff;
+  --input-border: #dbdbdb;
+
+  /* primary buttons/links */
+  --primary: #0095f6;
+  --primary-hover: #1877f2;
+  --primary-disabled: #b3dffc;
+
+  /* google / alt buttons */
+  --google-border: #dbdbdb;
+  --google-hover-bg: #fafafa;
+  --google-icon-border: #e5e5e5;
+  --google-bg: #fafafa;
+
+  /* footer text / muted UI */
+  --footer-text: #a3a3a3;
+
+  /* sidebar / hover helpers (LIGHT) */
+  --sidebar-hover-bg: #f5f5f5;
+  --logout-bg: #e6e6e6;
+  --logout-hover-bg: #e0e0e0;
+
+  /* tags / rightbar */
+  --tag-bg: #ffffff;
+  --tag-border: #dbdbdb;
+
+  /* search */
+  --search-bg: #ffffff;
+  --search-border: #dbdbdb;
+
+  /* shared button helpers */
+  --button-bg: var(--primary);
+  --button-hover-bg: var(--primary-hover);
+
+  /* error states */
+  --error-bg: #fef2f2;
+  --error-border: #fecaca;
+  --error-text: #b91c1c;
+
+  /* accents */
+  --accent-avatar-1: radial-gradient(circle at 30% 30%, #22c55e, #0ea5e9);
+  --accent-avatar-2: radial-gradient(circle at 30% 30%, #f97316, #ec4899);
+  --accent-avatar-3: radial-gradient(circle at 30% 30%, #0ea5e9, #22c55e);
+
+  /* link hovers */
+  --link-hover-bg: #f5f5f5;
+}
+
+/* DARK MODE */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000;
+    --bg-elevated: #000000;
+    --bg-subtle: #020617;
+
+    --border-soft: #262626;
+    --border-strong: #262626;
+
+    --text-main: #f9fafb;
+    --text-muted: #9ca3af;
+    --text-subtle: #6b7280;
+
+    --input-bg: #050509;
+    --input-border: #27272a;
+
+    /* primary color in dark mode */
+    --primary: #22c55e;
+    --primary-hover: #16a34a;
+    --primary-disabled: #1f2937;
+
+    --google-border: #4b5563;
+    --google-hover-bg: #111827;
+    --google-icon-border: #4b5563;
+    --google-bg: #111827;
+
+    --footer-text: #6b7280;
+
+    --sidebar-hover-bg: rgba(255, 255, 255, 0.06);
+    --logout-bg: rgba(38, 38, 38, 0.22);
+    --logout-hover-bg: #333333;
+
+    --tag-bg: #020617;
+    --tag-border: #374151;
+
+    --search-bg: #121212;
+    --search-border: #27272a;
+
+    --button-bg: #262626;
+    --button-hover-bg: #333333;
+
+    --error-bg: #451a1a;
+    --error-border: #7f1d1d;
+    --error-text: #fecaca;
+
+    --link-hover-bg: rgba(255, 255, 255, 0.06);
+  }
+}
