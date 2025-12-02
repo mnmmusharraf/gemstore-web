@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './styles/MainPage.css';
+import "../../styles/MainPage.css";
 import ProfilePage from './ProfilePage';
 import {
   FiHome,

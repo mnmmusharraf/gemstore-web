@@ -1,4 +1,4 @@
-import PasswordInput from "./PasswordInput";
+import PasswordInput from "../inputs/PasswordInput";
 
 export default function RegisterForm({
   displayName,

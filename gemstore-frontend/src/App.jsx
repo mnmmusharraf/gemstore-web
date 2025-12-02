@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
-import { registerUser, loginUser, getCurrentUser } from './api';
-import MainPage from './MainPage';
-import AuthLayout from './components/AuthLayout';
-import LoginForm from './components/LoginForm';
-import RegisterForm from './components/RegisterForm';
-import ForgotPasswordForm from './components/ForgotPasswordForm';
+import { registerUser, loginUser, getCurrentUser } from './api/auth';
+import MainPage from './components/main/MainPage';
+import AuthLayout from './components/auth/AuthLayout';
+import LoginForm from './components/auth/forms/LoginForm';
+import RegisterForm from './components/auth/forms/RegisterForm';
+import ForgotPasswordForm from './components/auth/forms/ForgotPasswordForm';
 
 function App() {
   const [currentUser, setCurrentUser] = useState(null);

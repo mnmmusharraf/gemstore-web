@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './styles/ProfilePage.css';
+import '../../styles/ProfilePage.css';
 
 function ProfilePage({ currentUser, onBack }) {
   // view | edit
