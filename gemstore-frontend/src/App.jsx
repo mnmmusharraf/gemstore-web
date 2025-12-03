@@ -1,134 +1,87 @@
-import { useState, useEffect } from 'react';
-import { registerUser, loginUser, getCurrentUser } from './api/auth';
-import MainPage from './components/main/MainPage';
-import AuthLayout from './components/auth/AuthLayout';
-import LoginForm from './components/auth/forms/LoginForm';
-import RegisterForm from './components/auth/forms/RegisterForm';
-import ForgotPasswordForm from './components/auth/forms/ForgotPasswordForm';
+import { useState } from "react";
+import useAuth from "./hooks/useAuth";
+
+import MainPage from "./components/main/MainPage";
+import AuthLayout from "./components/auth/AuthLayout";
+import LoginForm from "./components/auth/forms/LoginForm";
+import RegisterForm from "./components/auth/forms/RegisterForm";
+import ForgotPasswordForm from "./components/auth/forms/ForgotPasswordForm";
+import Processing from "./components/common/Processing";
+
+// import { toast } from "react-toastify";
+import { toast } from "sonner";
 
 function App() {
-  const [currentUser, setCurrentUser] = useState(null);
-  const [mode, setMode] = useState("login"); // login | register | forgot
-  const [errorMessage, setErrorMessage] = useState("");
-  const [loading, setLoading] = useState(false);
+  const {
+    currentUser,
+    login,
+    register,
+    logout,
+    loading,
+    authLoading,
+    errorMessage,
+    //setErrorMessage,
+  } = useAuth();
 
-  // Shared login fields
+  const [mode, setMode] = useState("login"); // login | register | forgot
+
+  // login fields
   const [emailOrUsername, setEmailOrUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
 
-  // Register fields
+  // register fields
   const [displayName, setDisplayName] = useState("");
   const [username, setUsername] = useState("");
   const [emailForRegister, setEmailForRegister] = useState("");
-
-  // Forgot password field
-  const [forgotEmail, setForgotEmail] = useState("");
-
-  // Password toggles
-  const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [showRegisterPassword, setShowRegisterPassword] = useState(false);
 
-  // Load token or google login
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const tokenFromUrl = params.get("token");
+  // forgot
+  const [forgotEmail, setForgotEmail] = useState("");
 
-    const loadUserFromToken = async (token) => {
-      try {
-        const user = await getCurrentUser(token);
-        setCurrentUser(user);
-      } catch {
-        localStorage.removeItem("authToken");
-      }
-    };
-
-    if (tokenFromUrl) {
-      localStorage.setItem("authToken", tokenFromUrl);
-      window.history.replaceState({}, "", "/");
-      loadUserFromToken(tokenFromUrl);
-    } else {
-      const stored = localStorage.getItem("authToken");
-      if (stored) loadUserFromToken(stored);
-    }
-  }, []);
-
-  const handleLogout = () => {
-    setCurrentUser(null);
-    localStorage.removeItem("authToken");
-  };
-
+  // GOOGLE LOGIN
   const handleGoogleSignIn = () => {
     window.location.href = "http://localhost:8080/oauth2/authorization/google";
   };
 
-  // LOGIN
+  // -----------------------------
+  // FORM HANDLERS
+  // -----------------------------
+
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
-    setErrorMessage("");
-    setLoading(true);
-
-    try {
-      const result = await loginUser({
-        identifier: emailOrUsername,
-        password,
-      });
-
-      localStorage.setItem("authToken", result.token);
-      setCurrentUser(result.user);
-      alert("Login successful!");
-    } catch (err) {
-      setErrorMessage(err.message || "Login failed");
-    } finally {
-      setLoading(false);
-    }
+    const ok = await login(emailOrUsername, password);
+    if (ok) toast.success("Login successful!");
   };
 
-  // REGISTER
   const handleRegisterSubmit = async (e) => {
     e.preventDefault();
-    setErrorMessage("");
-    setLoading(true);
-
-    try {
-      const result = await registerUser({
-        displayName,
-        username,
-        email: emailForRegister,
-        password,
-      });
-
-      localStorage.setItem("authToken", result.token);
-      setCurrentUser(result.user);
-      alert("Registration successful!");
-    } catch (err) {
-      setErrorMessage(err.message || "Registration failed");
-    } finally {
-      setLoading(false);
-    }
+    const ok = await register({
+      displayName,
+      username,
+      email: emailForRegister,
+      password,
+    });
+    if (ok) toast.success("Registration successful!");
   };
 
-  // FORGOT PASSWORD
-  const handleForgotPasswordSubmit = async (e) => {
+  const handleForgotPasswordSubmit = (e) => {
     e.preventDefault();
-    if (!forgotEmail.trim()) {
-      setErrorMessage("Please enter your email.");
-      return;
-    }
-
-    try {
-      setLoading(true);
-      alert("If an account exists, a reset link has been sent.");
-      setMode("login");
-      setEmailOrUsername(forgotEmail);
-    } catch {
-      setErrorMessage("Something went wrong.");
-    } finally {
-      setLoading(false);
-    }
+    toast.info("If an account exists, a reset link has been sent.");
+    setMode("login");
   };
+
+  // -----------------------------
+  // RENDER
+  // -----------------------------
+
+  if (loading) {
+  // while checking token in localStorage or URL
+  return <Processing text="Loading..." />;
+}
 
   if (currentUser) {
-    return <MainPage currentUser={currentUser} onLogout={handleLogout} />;
+    return <MainPage currentUser={currentUser} onLogout={logout} />;
   }
 
   return (
@@ -139,7 +92,7 @@ function App() {
           setEmailOrUsername={setEmailOrUsername}
           password={password}
           setPassword={setPassword}
-          loading={loading}
+          loading={authLoading}
           showPassword={showLoginPassword}
           setShowPassword={setShowLoginPassword}
           onSubmit={handleLoginSubmit}
@@ -162,7 +115,7 @@ function App() {
           setEmailForRegister={setEmailForRegister}
           password={password}
           setPassword={setPassword}
-          loading={loading}
+          loading={authLoading}
           showPassword={showRegisterPassword}
           setShowPassword={setShowRegisterPassword}
           onSubmit={handleRegisterSubmit}
@@ -174,7 +127,7 @@ function App() {
         <ForgotPasswordForm
           forgotEmail={forgotEmail}
           setForgotEmail={setForgotEmail}
-          loading={loading}
+          loading={authLoading}
           onSubmit={handleForgotPasswordSubmit}
           switchToLogin={() => setMode("login")}
         />
