@@ -1,7 +1,7 @@
 import { useState } from "react";
 import useAuth from "./hooks/useAuth";
 
-import MainPage from "./components/main/MainPage";
+import HomePage from "./pages/HomePage";
 import AuthLayout from "./components/auth/AuthLayout";
 import LoginForm from "./components/auth/forms/LoginForm";
 import RegisterForm from "./components/auth/forms/RegisterForm";
@@ -81,7 +81,7 @@ function App() {
 }
 
   if (currentUser) {
-    return <MainPage currentUser={currentUser} onLogout={logout} />;
+    return <HomePage currentUser={currentUser} onLogout={logout} />;
   }
 
   return (

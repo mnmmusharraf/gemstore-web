@@ -1,0 +1,28 @@
+@import "./theme.css";
+/* Uses shared form/button styles from HomePage.css */
+
+.estimator-result {
+  margin-top: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 10px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.estimator-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.estimator-value {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.estimator-sub {
+  font-size: 0.75rem;
+  color: var(--text-subtle);
+}

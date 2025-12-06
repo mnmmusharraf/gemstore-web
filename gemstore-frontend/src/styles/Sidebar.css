@@ -1,0 +1,147 @@
+@import "./theme.css";
+
+/* Left sidebar */
+.main-sidebar {
+  border-right: 1px solid var(--border-soft);
+  padding: 1.5rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  padding: 0 0.5rem 1.75rem;
+}
+
+.sidebar-logo-circle {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--accent-avatar-1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: #0f172a;
+  margin-right: 0.6rem;
+}
+
+.sidebar-logo-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-logo-main {
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.sidebar-logo-sub {
+  font-size: 0.75rem;
+  color: var(--text-subtle);
+}
+
+/* Nav */
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0 0.25rem;
+}
+
+.sidebar-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  color: var(--text-main);
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.sidebar-nav-item:hover {
+  background: var(--sidebar-hover-bg);
+  transform: translateY(-0.5px);
+}
+
+.sidebar-nav-item-active {
+  font-weight: 600;
+}
+
+.sidebar-icon {
+  font-size: 1.2rem;
+  color: var(--text-main);
+  flex-shrink: 0;
+}
+
+/* Footer */
+.sidebar-footer {
+  margin-top: auto;
+  padding: 1rem 0.5rem 0.25rem;
+  border-top: 1px solid var(--border-soft);
+}
+
+.sidebar-user {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.sidebar-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #22c55e, #14b8a6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: #0f172a;
+  margin-right: 0.5rem;
+}
+
+.sidebar-user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-user-name {
+  font-size: 0.9rem;
+}
+
+.sidebar-user-handle {
+  font-size: 0.8rem;
+  color: var(--text-subtle);
+}
+
+.sidebar-logout-btn {
+  width: 100%;
+  border-radius: 999px;
+  border: none;
+  color: var(--text-main);
+  padding: 0.45rem 0.75rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  background: var(--logout-bg);
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.sidebar-logout-btn:hover {
+  background: var(--logout-hover-bg);
+  transform: translateY(-0.5px);
+}
+
+/* Compact on tablet */
+@media (max-width: 1024px) {
+  .sidebar-logo-text {
+    display: none;
+  }
+  .sidebar-user-info {
+    display: none;
+  }
+}

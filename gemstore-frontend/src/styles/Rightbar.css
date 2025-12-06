@@ -1,0 +1,42 @@
+@import "./theme.css";
+
+.main-rightbar {
+  padding: 1.25rem 1rem;
+  overflow-y: auto;
+}
+
+.right-card {
+  background: var(--bg-elevated);
+  border-radius: 14px;
+  border: 1px solid var(--border-soft);
+  padding: 1rem 0.9rem 1.1rem;
+  margin-bottom: 1rem;
+}
+
+.right-card-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.right-card-text {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 0.8rem;
+}
+
+.right-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.right-tag {
+  border-radius: 999px;
+  border: 1px solid var(--tag-border);
+  background: var(--tag-bg);
+  color: var(--text-main);
+  font-size: 0.75rem;
+  padding: 0.3rem 0.7rem;
+  cursor: pointer;
+}

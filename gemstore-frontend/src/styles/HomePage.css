@@ -1,0 +1,155 @@
+@import "./theme.css";
+
+/* ---------- LAYOUT ---------- */
+
+/* Default: 3 columns (sidebar | main | rightbar) */
+.main-root {
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1.6fr) minmax(260px, 0.9fr);
+  height: 100vh;
+  background: var(--bg);
+  color: var(--text-main);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* Profile tab: 2 columns (sidebar | main) */
+.main-root.main-root--profile {
+  grid-template-columns: 250px minmax(0, 1fr);
+}
+
+.main-content {
+  border-right: 1px solid var(--border-soft);
+  padding: 1.25rem 1.5rem;
+  overflow-y: auto;
+}
+
+/* Shared cards */
+.panel-card {
+  background: var(--bg-elevated);
+  border-radius: 14px;
+  border: 1px solid var(--border-soft);
+  padding: 1.25rem 1.1rem 1.35rem;
+}
+
+.panel-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.panel-subtitle {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 1.1rem;
+}
+
+/* Shared forms */
+.sell-form,
+.estimator-form,
+.report-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.form-row {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.form-field {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.form-field label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.form-field input,
+.form-field textarea,
+.form-field select {
+  background: var(--input-bg);
+  border-radius: 8px;
+  border: 1px solid var(--input-border);
+  padding: 0.55rem 0.7rem;
+  color: var(--text-main);
+  font-size: 0.9rem;
+  outline: none;
+}
+
+.form-field input:focus,
+.form-field textarea:focus,
+.form-field select:focus {
+  border-color: var(--primary);
+}
+
+.upload-box {
+  border-radius: 10px;
+  border: 1px dashed var(--border-soft);
+  padding: 0.9rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* Shared buttons */
+.primary-btn {
+  align-self: flex-start;
+  border: none;
+  border-radius: 999px;
+  padding: 0.6rem 1.2rem;
+  background: var(--button-bg);
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.primary-btn:hover {
+  background: var(--button-hover-bg);
+  transform: translateY(-0.5px);
+}
+
+.secondary-btn {
+  align-self: flex-start;
+  border-radius: 999px;
+  border: 1px solid var(--secondary-border);
+  padding: 0.55rem 1.1rem;
+  background: transparent;
+  color: var(--text-main);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.secondary-btn:hover {
+  background: var(--sidebar-hover-bg);
+  transform: translateY(-0.5px);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .main-root {
+    grid-template-columns: 70px minmax(0, 1.8fr);
+  }
+  .main-rightbar {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-root {
+    grid-template-columns: 1fr;
+  }
+  .main-sidebar {
+    display: none;
+  }
+  .main-content {
+    border-right: none;
+  }
+}
