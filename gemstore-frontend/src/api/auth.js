@@ -1,4 +1,5 @@
-const API_BASE_URL = 'http://localhost:8080';
+// src/api/auth.js
+import { API_BASE_URL, handleResponse } from './config';
 
 export async function registerUser(payload) {
   const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
@@ -6,21 +7,9 @@ export async function registerUser(payload) {
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(payload),
+    body: JSON. stringify(payload),
   });
-
-  if (!response.ok) {
-    let message = 'Registration failed';
-    try {
-      const errorBody = await response.json();
-      message = errorBody.message || message;
-    } catch {
-      // ignore JSON parse error
-    }
-    throw new Error(message);
-  }
-
-  return response.json(); // AuthResponse
+  return handleResponse(response);
 }
 
 export async function loginUser(payload) {
@@ -29,21 +18,9 @@ export async function loginUser(payload) {
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(payload),
+    body:  JSON.stringify(payload),
   });
-
-  if (!response.ok) {
-    let message = 'Login failed';
-    try {
-      const errorBody = await response.json();
-      message = errorBody.message || message;
-    } catch {
-      // ignore JSON parse error
-    }
-    throw new Error(message);
-  }
-
-  return response.json(); // AuthResponse
+  return handleResponse(response);
 }
 
 export async function getCurrentUser(token) {
@@ -52,10 +29,5 @@ export async function getCurrentUser(token) {
       Authorization: `Bearer ${token}`,
     },
   });
-
-  if (!response.ok) {
-    throw new Error('Failed to load current user');
-  }
-
-  return response.json(); // UserResponse
+  return handleResponse(response);
 }

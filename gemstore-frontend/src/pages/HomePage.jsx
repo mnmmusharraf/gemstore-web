@@ -4,7 +4,7 @@ import Sidebar from "../components/layout/Sidebar";
 import Topbar from "../components/layout/Topbar";
 import Rightbar from "../components/layout/Rightbar";
 import FeedSection from "../components/feed/FeedSection";
-import SellFormSection from "../components/sell/SellFormSection";
+import SellFormSection from "../components/listing/SellFormSection";
 import MessagesSection from "../components/messages/MessagesSection";
 import ReportSection from "../components/report/ReportSection";
 import PriceEstimatorForm from "../components/estimator/PriceEstimatorForm";
