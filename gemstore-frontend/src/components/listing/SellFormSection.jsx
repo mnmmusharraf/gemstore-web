@@ -1,13 +1,12 @@
-// components/listing/SellFormSection.jsx
 import React, { useState } from 'react';
 import { useLookups } from '../../hooks/useLookups';
-import { listingService } from '../../api/listingService';
+import useListing from '../../hooks/useListing';
 import ImageUploader from './ImageUploader';
 import ListingPreviewModal from './ListingPreviewModal';
 import '../../styles/SellFormSection.css';
 
 const initialFormState = {
-  title:  '',
+  title: '',
   description: '',
   gemstoneTypeId: '',
   caratWeight: '',
@@ -21,18 +20,18 @@ const initialFormState = {
   widthMm: '',
   depthMm: '',
   price: '',
-  currency:  'LKR',
+  currency: 'LKR',
   isCertified: false,
   certificateInfo: ''
 };
 
 function SellFormSection() {
   const { lookups, loading: lookupsLoading, error: lookupsError } = useLookups();
+  const { createListing, saving: isSubmitting, error: submissionError } = useListing();
 
   const [formData, setFormData] = useState(initialFormState);
   const [images, setImages] = useState([]);
   const [errors, setErrors] = useState({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
@@ -59,9 +58,9 @@ function SellFormSection() {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.title. trim()) {
+    if (!formData.title.trim()) {
       newErrors.title = 'Title is required';
-    } else if (formData.title. length < 5) {
+    } else if (formData.title.length < 5) {
       newErrors.title = 'Title must be at least 5 characters';
     }
 
@@ -75,7 +74,7 @@ function SellFormSection() {
       newErrors.caratWeight = 'Carat weight must be at least 0.01';
     }
 
-    if (!formData. price) {
+    if (!formData.price) {
       newErrors.price = 'Price is required';
     } else if (parseFloat(formData.price) < 1) {
       newErrors.price = 'Price must be at least 1';
@@ -96,78 +95,26 @@ function SellFormSection() {
     }
   };
 
-  // Upload images and get URLs
-  const uploadImages = async () => {
-    // TODO: Replace with your actual image upload logic
-    // This could be to S3, Cloudinary, or your own server
-    const uploadedUrls = [];
-
-    for (const img of images) {
-      // Example: Upload to your backend
-      // const imageFormData = new FormData();
-      // imageFormData.append('file', img. file);
-      // const uploadResponse = await api.post('/api/v1/upload', imageFormData);
-      // uploadedUrls.push(uploadResponse.data.url);
-
-      // For now, using placeholder
-      uploadedUrls.push(img.preview);
-    }
-
-    return uploadedUrls;
-  };
-
   // Handle form submission
   const handleSubmit = async () => {
     if (!validateForm()) return;
 
-    setIsSubmitting(true);
-    try {
-      // Upload images first
-      const imageUrls = await uploadImages();
-      const primaryIndex = images.findIndex(img => img.isPrimary);
+    const result = await createListing(formData, images);
 
-      // Prepare request data
-      const requestData = {
-        title: formData.title.trim(),
-        description: formData.description.trim() || null,
-        gemstoneTypeId: parseInt(formData.gemstoneTypeId),
-        caratWeight: parseFloat(formData. caratWeight),
-        price: parseFloat(formData.price),
-        currency: formData.currency,
-        colorId: formData.colorId ? parseInt(formData.colorId) : null,
-        colorQualityId: formData.colorQualityId ?  parseInt(formData.colorQualityId) : null,
-        clarityId: formData.clarityId ? parseInt(formData. clarityId) : null,
-        cutId: formData.cutId ? parseInt(formData.cutId) : null,
-        originId: formData.originId ?  parseInt(formData.originId) : null,
-        treatmentId: formData.treatmentId ?  parseInt(formData.treatmentId) : null,
-        lengthMm: formData.lengthMm ? parseFloat(formData.lengthMm) : null,
-        widthMm:  formData.widthMm ?  parseFloat(formData.widthMm) : null,
-        depthMm: formData. depthMm ? parseFloat(formData.depthMm) : null,
-        isCertified: formData.isCertified,
-        certificateInfo:  formData.isCertified ?  formData.certificateInfo.trim() : null,
-        imageUrls: imageUrls,
-        primaryImageIndex: primaryIndex >= 0 ? primaryIndex : 0
-      };
-
-      await listingService.createListing(requestData);
-
+    if (result.success) {
       setSubmitSuccess(true);
       setShowPreview(false);
-
+      
       // Reset form
       setFormData(initialFormState);
       setImages([]);
       setErrors({});
 
       // Optional: redirect to listing page
-      // navigate(`/listings/${response.data.id}`);
-
-    } catch (error) {
-      console.error('Error creating listing:', error);
-      const errorMessage = error.response?. data?.message || 'Failed to create listing';
-      alert(errorMessage);
-    } finally {
-      setIsSubmitting(false);
+      // navigate(`/listings/${result.data.id}`);
+    } else {
+      // Error is already set in the hook
+      alert(result.error);
     }
   };
 
@@ -207,7 +154,7 @@ function SellFormSection() {
           <span className="success-icon">🎉</span>
           <div>
             <strong>Listing created successfully!</strong>
-            <p>Your gemstone is now live on the marketplace. </p>
+            <p>Your gemstone is now live on the marketplace.</p>
           </div>
           <button
             className="close-success-btn"
@@ -218,8 +165,18 @@ function SellFormSection() {
         </div>
       )}
 
-      <form className="sell-form" onSubmit={(e) => e.preventDefault()}>
+      {/* Error Message from hook */}
+      {submissionError && (
+        <div className="error-message">
+          <span className="error-icon">⚠️</span>
+          <div>
+            <strong>Error:</strong>
+            <p>{submissionError}</p>
+          </div>
+        </div>
+      )}
 
+      <form className="sell-form" onSubmit={(e) => e.preventDefault()}>
         {/* Title */}
         <div className="form-field full-width">
           <label>Listing Title <span className="required">*</span></label>
@@ -227,10 +184,10 @@ function SellFormSection() {
             name="title"
             value={formData.title}
             onChange={handleChange}
-            placeholder="e.g.  Natural Vivid Green Colombian Emerald - 2.5ct"
+            placeholder="e.g. Natural Vivid Green Colombian Emerald - 2.5ct"
             className={errors.title ? 'error' : ''}
           />
-          {errors. title && <span className="error-text">{errors.title}</span>}
+          {errors.title && <span className="error-text">{errors.title}</span>}
         </div>
 
         {/* Gemstone Type & Carat */}
@@ -241,10 +198,10 @@ function SellFormSection() {
               name="gemstoneTypeId"
               value={formData.gemstoneTypeId}
               onChange={handleChange}
-              className={errors. gemstoneTypeId ? 'error' : ''}
+              className={errors.gemstoneTypeId ? 'error' : ''}
             >
-              <option value="">Select type... </option>
-              {lookups. gemstoneTypes. map(type => (
+              <option value="">Select type...</option>
+              {lookups.gemstoneTypes.map(type => (
                 <option key={type.id} value={type.id}>
                   {type.name}
                 </option>
@@ -331,8 +288,8 @@ function SellFormSection() {
             >
               <option value="">Select cut...</option>
               {lookups.cuts.map(cut => (
-                <option key={cut.id} value={cut. id}>
-                  {cut. name}
+                <option key={cut.id} value={cut.id}>
+                  {cut.name}
                 </option>
               ))}
             </select>
@@ -348,8 +305,8 @@ function SellFormSection() {
               value={formData.originId}
               onChange={handleChange}
             >
-              <option value="">Select origin... </option>
-              {lookups. origins.map(origin => (
+              <option value="">Select origin...</option>
+              {lookups.origins.map(origin => (
                 <option key={origin.id} value={origin.id}>
                   {origin.name}
                 </option>
@@ -361,7 +318,7 @@ function SellFormSection() {
             <label>Treatment</label>
             <select
               name="treatmentId"
-              value={formData. treatmentId}
+              value={formData.treatmentId}
               onChange={handleChange}
             >
               <option value="">Select treatment...</option>

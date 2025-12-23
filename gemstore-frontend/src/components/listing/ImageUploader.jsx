@@ -1,102 +1,202 @@
-// components/listing/ImageUploader.jsx
-import React, { useCallback } from 'react';
-import { useDropzone } from 'react-dropzone';
+import React, { useRef } from 'react';
+import '../../styles/ImageUploader.css';
 
-function ImageUploader({ images, setImages, maxImages = 10 }) {
-  const onDrop = useCallback((acceptedFiles) => {
-    if (images.length + acceptedFiles.length > maxImages) {
-      alert(`Maximum ${maxImages} images allowed`);
+const ImageUploader = ({ images, setImages, maxImages = 10 }) => {
+  const fileInputRef = useRef(null);
+
+  // Validate file
+  const validateFile = (file) => {
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    const maxSize = 5 * 1024 * 1024; // 5MB
+
+    if (!validTypes.includes(file.type)) {
+      return { valid: false, error: 'Only JPEG, PNG, and WebP images are allowed' };
+    }
+
+    if (file.size > maxSize) {
+      return { valid: false, error: 'Image size must be less than 5MB' };
+    }
+
+    return { valid: true };
+  };
+
+  // Handle file selection
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    const remainingSlots = maxImages - images.length;
+
+    if (files.length > remainingSlots) {
+      alert(`You can only upload ${remainingSlots} more image(s)`);
       return;
     }
 
-    const newImages = acceptedFiles.map(file => ({
-      file,
-      preview:  URL.createObjectURL(file),
-      isPrimary: images.length === 0 // First image is primary
-    }));
+    const newImages = [];
+    const errors = [];
 
-    setImages(prev => [...prev, ... newImages]);
-  }, [images, maxImages, setImages]);
-
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: {
-      'image/*': ['.jpeg', '.jpg', '.png', '. webp']
-    },
-    maxSize: 5 * 1024 * 1024, // 5MB
-  });
-
-  const removeImage = (index) => {
-    setImages(prev => {
-      const updated = prev.filter((_, i) => i !== index);
-      // If removed primary, make first image primary
-      if (prev[index]?.isPrimary && updated.length > 0) {
-        updated[0].isPrimary = true;
+    files.forEach((file, index) => {
+      const validation = validateFile(file);
+      
+      if (validation.valid) {
+        const reader = new FileReader();
+        
+        reader.onloadend = () => {
+          const newImage = {
+            id: Date.now() + index,
+            file: file,
+            preview: reader.result,
+            isPrimary: images.length === 0 && index === 0
+          };
+          
+          newImages.push(newImage);
+          
+          // Update state after all files are processed
+          if (newImages.length === files.length - errors.length) {
+            setImages(prev => [...prev, ...newImages]);
+          }
+        };
+        
+        reader.readAsDataURL(file);
+      } else {
+        errors.push(`${file.name}: ${validation.error}`);
       }
-      return updated;
     });
+
+    if (errors.length > 0) {
+      alert('Some files were skipped:\n' + errors.join('\n'));
+    }
+
+    // Reset input
+    e.target.value = '';
   };
 
-  const setPrimaryImage = (index) => {
-    setImages(prev => prev.map((img, i) => ({
+  // Remove image
+  const handleRemoveImage = (id) => {
+    const removedImage = images.find(img => img.id === id);
+    const newImages = images.filter(img => img.id !== id);
+
+    // If removed image was primary, make first image primary
+    if (removedImage?.isPrimary && newImages.length > 0) {
+      newImages[0].isPrimary = true;
+    }
+
+    setImages(newImages);
+  };
+
+  // Set primary image
+  const handleSetPrimary = (id) => {
+    setImages(images.map(img => ({
       ...img,
-      isPrimary: i === index
+      isPrimary: img.id === id
     })));
+  };
+
+  // Move image
+  const handleMoveImage = (index, direction) => {
+    if (
+      (direction === 'left' && index === 0) ||
+      (direction === 'right' && index === images.length - 1)
+    ) {
+      return;
+    }
+
+    const newImages = [...images];
+    const swapIndex = direction === 'left' ? index - 1 : index + 1;
+    [newImages[index], newImages[swapIndex]] = [newImages[swapIndex], newImages[index]];
+    
+    setImages(newImages);
   };
 
   return (
     <div className="image-uploader">
-      {/* Dropzone */}
-      <div
-        {...getRootProps()}
-        className={`upload-box ${isDragActive ? 'drag-active' : ''}`}
-      >
-        <input {...getInputProps()} />
-        {isDragActive ? (
-          <span>Drop images here... </span>
-        ) : (
-          <span>
-            <i className="upload-icon">📷</i>
-            Drag & drop images here or click to browse
-            <small>Max {maxImages} images, 5MB each</small>
-          </span>
-        )}
+      {/* Upload button */}
+      <div className="upload-zone">
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/jpeg,image/jpg,image/png,image/webp"
+          multiple
+          onChange={handleFileChange}
+          style={{ display: 'none' }}
+        />
+        
+        <button
+          type="button"
+          className="upload-btn"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={images.length >= maxImages}
+        >
+          {images.length >= maxImages ? (
+            <>🚫 Maximum images reached</>
+          ) : (
+            <>📷 Add Photos ({images.length}/{maxImages})</>
+          )}
+        </button>
+        
+        <p className="upload-hint">
+          JPEG, PNG, or WebP • Max 5MB per image
+        </p>
       </div>
 
-      {/* Image Previews */}
+      {/* Image previews */}
       {images.length > 0 && (
-        <div className="image-previews">
+        <div className="image-grid">
           {images.map((img, index) => (
-            <div
-              key={index}
-              className={`preview-item ${img.isPrimary ? 'primary' : ''}`}
-            >
+            <div key={img.id} className="image-item">
               <img src={img.preview} alt={`Preview ${index + 1}`} />
-              <div className="preview-actions">
+              
+              {/* Primary badge */}
+              {img.isPrimary && (
+                <span className="primary-badge">Primary</span>
+              )}
+
+              {/* Controls overlay */}
+              <div className="image-controls">
                 <button
                   type="button"
-                  className="set-primary-btn"
-                  onClick={() => setPrimaryImage(index)}
-                  title="Set as primary"
+                  className="control-btn move-btn"
+                  onClick={() => handleMoveImage(index, 'left')}
+                  disabled={index === 0}
+                  title="Move left"
                 >
-                  {img.isPrimary ? '⭐' : '☆'}
+                  ←
                 </button>
+
+                {!img.isPrimary && (
+                  <button
+                    type="button"
+                    className="control-btn primary-btn"
+                    onClick={() => handleSetPrimary(img.id)}
+                    title="Set as primary"
+                  >
+                    ⭐
+                  </button>
+                )}
+
                 <button
                   type="button"
-                  className="remove-btn"
-                  onClick={() => removeImage(index)}
+                  className="control-btn move-btn"
+                  onClick={() => handleMoveImage(index, 'right')}
+                  disabled={index === images.length - 1}
+                  title="Move right"
+                >
+                  →
+                </button>
+
+                <button
+                  type="button"
+                  className="control-btn remove-btn"
+                  onClick={() => handleRemoveImage(img.id)}
                   title="Remove"
                 >
                   ✕
                 </button>
               </div>
-              {img.isPrimary && <span className="primary-badge">Primary</span>}
             </div>
           ))}
         </div>
       )}
     </div>
   );
-}
+};
 
-export default ImageUploader;
+export default ImageUploader; 

@@ -1,4 +1,3 @@
-// hooks/useLookups.js
 import { useState, useEffect } from 'react';
 import { listingService } from '../api/listingService';
 
