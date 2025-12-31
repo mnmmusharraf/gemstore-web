@@ -1,0 +1,119 @@
+@import "./theme.css";
+
+/* ===================== Upload Zone ===================== */
+.upload-zone {
+  /* Using --input-border instead of #cbd5e1 */
+  border: 2px dashed var(--input-border);
+  border-radius: 14px;
+  padding: 2.5rem 1.5rem;
+  /* Using --bg-subtle or --input-bg instead of #f5f7fa */
+  background-color: var(--input-bg);
+  text-align: center;
+  transition: all 0.2s;
+  cursor: pointer;
+  color: var(--text-muted);
+}
+
+.upload-zone:hover:not(.disabled) {
+  /* Using your primary color variable */
+  border-color: var(--primary);
+  background-color: var(--link-hover-bg);
+}
+
+.upload-btn {
+  /* Buttons now use the --primary variable (Blue in light, Green in dark) */
+  background: var(--primary);
+  color: #ffffff; /* Contrast text */
+  border: none;
+  padding: 0.65rem 1.2rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.upload-btn:hover {
+  background: var(--primary-hover);
+}
+
+.upload-hint {
+  color: var(--text-subtle);
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+}
+
+/* ===================== Image Grid ===================== */
+.image-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.image-item {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 12px;
+  overflow: hidden;
+  /* Use theme border */
+  border: 2px solid var(--border-soft);
+  background: var(--bg-elevated);
+}
+
+.image-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.primary-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: #10b981; /* Success green is usually safe to keep hardcoded */
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: bold;
+  z-index: 10;
+}
+
+.image-controls {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  /* Semi-transparent dark background works in both modes */
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.image-item:hover .image-controls {
+  opacity: 1;
+}
+
+.control-btn {
+  /* Using theme variables for control buttons inside the overlay */
+  background: #ffffff;
+  color: #111827;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 10px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: transform 0.1s;
+}
+
+.control-btn:hover {
+  transform: scale(1.1);
+}
+
+.control-btn.remove-btn { 
+  color: var(--error-text); 
+}

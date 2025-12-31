@@ -1,2 +1,108 @@
 @import "./theme.css";
-/* Uses shared form/button styles from HomePage.css */
+
+/* ===================== Form Layout ===================== */
+.sell-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.dimension-row-centered {
+  display: flex;
+  justify-content: center;  
+  gap: 2rem;               
+}
+
+.dimension-row-centered .form-field {
+  min-width: 120px;         
+  max-width: 180px;
+  flex: 1 0 0;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  color: var(--text-main); /* Added to ensure text visibility */
+}
+
+.form-field.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-section {
+  /* Using --border-soft instead of #e5e7eb */
+  border-top: 1px solid var(--border-soft); 
+  padding-top: 1rem;
+  margin-top: 0.5rem;
+}
+
+.required {
+  /* You can use --error-text or keep a dedicated red */
+  color: #ef4444; 
+}
+
+/* ===================== Inputs ===================== */
+.sell-form input,
+.sell-form select,
+.sell-form textarea {
+  padding: 0.75rem 1rem;
+  /* Using theme variables for background, border, and text */
+  background-color: var(--input-bg);
+  border: 1px solid var(--input-border);
+  color: var(--text-main);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.sell-form input:focus,
+.sell-form select:focus,
+.sell-form textarea:focus {
+  outline: none;
+  /* Using --primary for the focus state */
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(0, 149, 246, 0.1); 
+}
+
+.sell-form input.error {
+  border-color: var(--error-border);
+}
+
+.error-text {
+  font-size: 0.75rem;
+  color: var(--error-text);
+}
+
+/* ===================== Actions & Alerts ===================== */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-soft);
+}
+
+.success-message {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  /* Note: You might want to add --success variables to theme.css */
+  background: #d1fae5; 
+  border: 1px solid #34d399;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  color: #065f46;
+}
+
+@media (max-width: 768px) {
+  .form-row { grid-template-columns: 1fr; }
+  .dimension-row-centered { flex-direction: column; gap: 1rem; }
+}

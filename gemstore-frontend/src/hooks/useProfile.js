@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { getAuthToken, removeAuthToken} from '../api/config';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
 
@@ -28,9 +29,14 @@ export const useProfile = (currentUser, onProfileUpdate) => {
     }
   }, [success]);
 
-  const getAuthToken = () => {
-    return localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-  };
+  // const getAuthToken = () => {
+  //   return localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+  // };
+
+  const handleUnauthorized = () => {
+    removeAuthToken();
+    window.location.href = '/login';
+  }
 
   const fetchProfile = async () => {
     setLoading(true);
@@ -51,6 +57,7 @@ export const useProfile = (currentUser, onProfileUpdate) => {
       });
 
       if (response.status === 401) {
+        handleUnauthorized();
         throw new Error('Session expired. Please log in again.');
       }
 
@@ -101,6 +108,7 @@ export const useProfile = (currentUser, onProfileUpdate) => {
       });
 
       if (response.status === 401) {
+        handleUnauthorized();
         throw new Error('Session expired. Please log in again.');
       }
 
@@ -154,6 +162,7 @@ export const useProfile = (currentUser, onProfileUpdate) => {
       });
 
       if (response.status === 401) {
+        handleUnauthorized();
         throw new Error('Session expired. Please log in again.');
       }
 
@@ -193,6 +202,7 @@ export const useProfile = (currentUser, onProfileUpdate) => {
       });
 
       if (response.status === 401) {
+        handleUnauthorized();
         throw new Error('Session expired. Please log in again.');
       }
 
