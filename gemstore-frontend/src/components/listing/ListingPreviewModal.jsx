@@ -1,5 +1,5 @@
-// components/listing/ListingPreviewModal.jsx
-import React from 'react';
+import React, { useState } from 'react';
+import '../../styles/ListingPreviewModal.css';
 
 function ListingPreviewModal({ 
   formData, 
@@ -9,47 +9,58 @@ function ListingPreviewModal({
   onSubmit, 
   isSubmitting 
 }) {
-  // Helper to get lookup name by ID
+  // 1. Initialize state with the primary image or the first one in the array
+  const [activeImage, setActiveImage] = useState(
+    images.find(img => img.isPrimary) || images[0]
+  );
+
+  // Helper to get lookup name by ID (using String comparison for safety)
   const getLookupName = (list, id) => {
-    if (! id) return '-';
-    const item = list.find(l => l.id === parseInt(id));
+    if (!id) return '-';
+    const item = list.find(l => String(l.id) === String(id));
     return item?.name || '-';
   };
-
-  const primaryImage = images.find(img => img.isPrimary) || images[0];
 
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content preview-modal" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
           <h2>Preview Your Listing</h2>
-          <button className="close-btn" onClick={onClose}>✕</button>
+          <button className="close-btn" onClick={onClose} aria-label="Close">✕</button>
         </div>
 
         <div className="modal-body">
           <div className="preview-layout">
-            {/* Images */}
+            {/* Images Section */}
             <div className="preview-images">
-              {primaryImage && (
-                <img
-                  src={primaryImage.preview}
-                  alt="Primary"
-                  className="primary-preview"
-                />
+              {/* 2. Main display area uses the activeImage from state */}
+              {activeImage && (
+                <div className="main-preview-container">
+                  <img
+                    src={activeImage.preview}
+                    alt="Current Selection"
+                    className="primary-preview"
+                  />
+                </div>
               )}
+              
+              {/* 3. Thumbnails loop */}
               <div className="thumbnail-row">
                 {images.map((img, index) => (
                   <img
-                    key={index}
+                    key={img.id || index}
                     src={img.preview}
                     alt={`Thumbnail ${index + 1}`}
-                    className={`thumbnail ${img.isPrimary ? 'active' : ''}`}
+                    /* 4. Update the state when a thumbnail is clicked */
+                    onClick={() => setActiveImage(img)}
+                    /* 5. Add 'active' class if this image matches the state */
+                    className={`thumbnail ${activeImage?.id === img.id ? 'active' : ''}`}
                   />
                 ))}
               </div>
             </div>
 
-            {/* Details */}
+            {/* Details Section */}
             <div className="preview-details">
               <h3>{formData.title || 'Untitled Listing'}</h3>
 
@@ -57,7 +68,7 @@ function ListingPreviewModal({
                 <span className="price">
                   {formData.currency} {parseFloat(formData.price || 0).toLocaleString()}
                 </span>
-                {formData.caratWeight && (
+                {formData.caratWeight && formData.price > 0 && (
                   <span className="price-per-carat">
                     ({formData.currency} {(formData.price / formData.caratWeight).toLocaleString()} /ct)
                   </span>
@@ -67,9 +78,7 @@ function ListingPreviewModal({
               <div className="specs-grid">
                 <div className="spec-item">
                   <span className="label">Type</span>
-                  <span className="value">
-                    {getLookupName(lookups. gemstoneTypes, formData. gemstoneTypeId)}
-                  </span>
+                  <span className="value">{getLookupName(lookups.gemstoneTypes, formData.gemstoneTypeId)}</span>
                 </div>
                 <div className="spec-item">
                   <span className="label">Carat</span>
@@ -77,33 +86,23 @@ function ListingPreviewModal({
                 </div>
                 <div className="spec-item">
                   <span className="label">Color</span>
-                  <span className="value">
-                    {getLookupName(lookups.colors, formData.colorId)}
-                  </span>
+                  <span className="value">{getLookupName(lookups.colors, formData.colorId)}</span>
                 </div>
                 <div className="spec-item">
                   <span className="label">Clarity</span>
-                  <span className="value">
-                    {getLookupName(lookups.clarityGrades, formData.clarityId)}
-                  </span>
+                  <span className="value">{getLookupName(lookups.clarityGrades, formData.clarityId)}</span>
                 </div>
                 <div className="spec-item">
                   <span className="label">Cut</span>
-                  <span className="value">
-                    {getLookupName(lookups.cuts, formData.cutId)}
-                  </span>
+                  <span className="value">{getLookupName(lookups.cuts, formData.cutId)}</span>
                 </div>
                 <div className="spec-item">
                   <span className="label">Origin</span>
-                  <span className="value">
-                    {getLookupName(lookups.origins, formData. originId)}
-                  </span>
+                  <span className="value">{getLookupName(lookups.origins, formData.originId)}</span>
                 </div>
                 <div className="spec-item">
                   <span className="label">Treatment</span>
-                  <span className="value">
-                    {getLookupName(lookups.treatments, formData.treatmentId)}
-                  </span>
+                  <span className="value">{getLookupName(lookups.treatments, formData.treatmentId)}</span>
                 </div>
                 {formData.isCertified && (
                   <div className="spec-item">
@@ -115,7 +114,7 @@ function ListingPreviewModal({
 
               {/* Dimensions */}
               {(formData.lengthMm || formData.widthMm || formData.depthMm) && (
-                <div className="dimensions">
+                <div className="dimensions-info">
                   <span className="label">Dimensions: </span>
                   <span className="value">
                     {formData.lengthMm || '-'} × {formData.widthMm || '-'} × {formData.depthMm || '-'} mm
@@ -127,7 +126,7 @@ function ListingPreviewModal({
               {formData.description && (
                 <div className="description">
                   <h4>Description</h4>
-                  <p>{formData. description}</p>
+                  <p>{formData.description}</p>
                 </div>
               )}
             </div>
@@ -135,13 +134,14 @@ function ListingPreviewModal({
         </div>
 
         <div className="modal-footer">
-          <button className="secondary-btn" onClick={onClose}>
+          <button className="secondary-btn" onClick={onClose} type="button">
             Edit Listing
           </button>
           <button
             className="primary-btn"
             onClick={onSubmit}
             disabled={isSubmitting}
+            type="button"
           >
             {isSubmitting ? (
               <>

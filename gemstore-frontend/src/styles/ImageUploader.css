@@ -1,228 +1,119 @@
-/* ImageUploader.css */
+@import "./theme.css";
 
-.image-uploader {
-  width: 100%;
-}
-
-/* Upload Zone */
+/* ===================== Upload Zone ===================== */
 .upload-zone {
-  border: 2px dashed #cbd5e0;
-  border-radius: 12px;
+  /* Using --input-border instead of #cbd5e1 */
+  border: 2px dashed var(--input-border);
+  border-radius: 14px;
   padding: 2.5rem 1.5rem;
+  /* Using --bg-subtle or --input-bg instead of #f5f7fa */
+  background-color: var(--input-bg);
   text-align: center;
+  transition: all 0.2s;
   cursor: pointer;
-  transition: all 0.3s ease;
-  background-color: #f8fafc;
+  color: var(--text-muted);
 }
 
 .upload-zone:hover:not(.disabled) {
-  border-color: #4299e1;
-  background-color: #ebf8ff;
+  /* Using your primary color variable */
+  border-color: var(--primary);
+  background-color: var(--link-hover-bg);
 }
 
-.upload-zone.drag-active {
-  border-color: #4299e1;
-  background-color: #ebf8ff;
-  transform: scale(1.02);
+.upload-btn {
+  /* Buttons now use the --primary variable (Blue in light, Green in dark) */
+  background: var(--primary);
+  color: #ffffff; /* Contrast text */
+  border: none;
+  padding: 0.65rem 1.2rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
 }
 
-.upload-zone.disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
-  background-color: #f1f5f9;
-}
-
-.upload-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.upload-icon {
-  font-size: 3rem;
-  display: block;
-}
-
-.upload-text {
-  font-size: 1rem;
-  font-weight: 500;
-  color: #2d3748;
-  margin: 0;
+.upload-btn:hover {
+  background: var(--primary-hover);
 }
 
 .upload-hint {
-  font-size: 0.875rem;
-  color: #718096;
-  margin: 0;
+  color: var(--text-subtle);
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
 }
 
-/* Image Grid */
+/* ===================== Image Grid ===================== */
 .image-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: 1rem;
   margin-top: 1.5rem;
 }
 
 .image-item {
   position: relative;
+  aspect-ratio: 1;
   border-radius: 12px;
   overflow: hidden;
-  background-color: #f7fafc;
-  border: 2px solid #e2e8f0;
-  transition: all 0.3s ease;
-  aspect-ratio: 1;
-}
-
-.image-item:hover {
-  border-color: #4299e1;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  /* Use theme border */
+  border: 2px solid var(--border-soft);
+  background: var(--bg-elevated);
 }
 
 .image-item img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  display: block;
 }
 
-/* Primary Badge */
 .primary-badge {
   position: absolute;
   top: 8px;
   left: 8px;
-  background-color: #48bb78;
+  background: #10b981; /* Success green is usually safe to keep hardcoded */
   color: white;
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  z-index: 2;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: bold;
+  z-index: 10;
 }
 
-/* Image Controls */
 .image-controls {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
-  padding: 1rem 0.5rem 0.5rem;
+  /* Semi-transparent dark background works in both modes */
+  background: rgba(0, 0, 0, 0.7);
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.2s;
 }
 
 .image-item:hover .image-controls {
   opacity: 1;
 }
 
-.control-row {
-  display: flex;
-  justify-content: center;
-  gap: 0.5rem;
-}
-
 .control-btn {
-  background-color: rgba(255, 255, 255, 0.95);
+  /* Using theme variables for control buttons inside the overlay */
+  background: #ffffff;
+  color: #111827;
   border: none;
-  border-radius: 6px;
-  padding: 0.5rem;
-  cursor: pointer;
-  font-size: 0.875rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  color: #2d3748;
-  min-width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.control-btn:hover:not(:disabled) {
-  background-color: white;
-  transform: translateY(-2px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-}
-
-.control-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.move-btn {
-  font-size: 1rem;
-  font-weight: bold;
-}
-
-.primary-btn {
-  background-color: #fbbf24;
-  color: #78350f;
-  font-size: 1.25rem;
-}
-
-.primary-btn:hover {
-  background-color: #f59e0b;
-}
-
-.remove-btn {
-  background-color: #ef4444;
-  color: white;
-  width: 100%;
-  font-size: 0.875rem;
-}
-
-.remove-btn:hover {
-  background-color: #dc2626;
-}
-
-/* Image Info */
-.image-info {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background-color: rgba(0, 0, 0, 0.7);
-  color: white;
-  padding: 4px 8px;
   border-radius: 4px;
-  font-size: 0.75rem;
-  z-index: 2;
+  padding: 4px 10px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: transform 0.1s;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .image-grid {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 0.75rem;
-  }
-
-  .upload-zone {
-    padding: 2rem 1rem;
-  }
-
-  .upload-icon {
-    font-size: 2.5rem;
-  }
-
-  .image-controls {
-    opacity: 1; /* Always visible on mobile */
-  }
+.control-btn:hover {
+  transform: scale(1.1);
 }
 
-@media (max-width: 480px) {
-  .image-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .control-btn {
-    padding: 0.375rem;
-    min-width: 32px;
-    height: 32px;
-    font-size: 0.75rem;
-  }
+.control-btn.remove-btn { 
+  color: var(--error-text); 
 }

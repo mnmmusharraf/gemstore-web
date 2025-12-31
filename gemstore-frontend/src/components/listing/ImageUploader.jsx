@@ -22,52 +22,37 @@ const ImageUploader = ({ images, setImages, maxImages = 10 }) => {
 
   // Handle file selection
   const handleFileChange = (e) => {
-    const files = Array.from(e.target.files);
-    const remainingSlots = maxImages - images.length;
+  const files = Array.from(e.target.files).slice(0, maxImages - images.length);
 
-    if (files.length > remainingSlots) {
-      alert(`You can only upload ${remainingSlots} more image(s)`);
-      return;
-    }
-
-    const newImages = [];
-    const errors = [];
-
-    files.forEach((file, index) => {
+  Promise.all(files.map(file =>
+    new Promise((resolve) => {
       const validation = validateFile(file);
-      
-      if (validation.valid) {
-        const reader = new FileReader();
-        
-        reader.onloadend = () => {
-          const newImage = {
-            id: Date.now() + index,
-            file: file,
-            preview: reader.result,
-            isPrimary: images.length === 0 && index === 0
-          };
-          
-          newImages.push(newImage);
-          
-          // Update state after all files are processed
-          if (newImages.length === files.length - errors.length) {
-            setImages(prev => [...prev, ...newImages]);
-          }
-        };
-        
-        reader.readAsDataURL(file);
-      } else {
-        errors.push(`${file.name}: ${validation.error}`);
-      }
-    });
+      if (!validation.valid) return resolve({ error: `${file.name}: ${validation.error}` });
 
-    if (errors.length > 0) {
-      alert('Some files were skipped:\n' + errors.join('\n'));
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        resolve({
+          id: Date.now() + Math.random(),
+          file,
+          preview: reader.result,
+          isPrimary: false
+        });
+      };
+      reader.readAsDataURL(file);
+    })
+  )).then(results => {
+    const validImages = results.filter(r => !r.error);
+    const errors = results.filter(r => r.error).map(r => r.error);
+
+    if (images.length === 0 && validImages.length > 0) {
+      validImages[0].isPrimary = true;
     }
+    setImages(prev => [...prev, ...validImages]);
+    if (errors.length > 0) alert('Some files were skipped:\n' + errors.join('\n'));
+  });
 
-    // Reset input
-    e.target.value = '';
-  };
+  e.target.value = '';
+};
 
   // Remove image
   const handleRemoveImage = (id) => {

@@ -334,7 +334,7 @@ function SellFormSection() {
         {/* Dimensions */}
         <div className="form-section">
           <h4>Dimensions (mm) <span className="optional">Optional</span></h4>
-          <div className="form-row three-col">
+          <div className="dimension-row-centered">
             <div className="form-field">
               <label>Length</label>
               <input
