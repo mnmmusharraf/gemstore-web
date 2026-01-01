@@ -6,7 +6,7 @@ import ProfileEditForm from '../../components/profile/ProfileEditForm';
 import ProfilePostsGrid from '../../components/profile/ProfilePostsGrid';
 import AlertMessage from '../../components/common/AlertMessage';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
-import '../../styles/ProfilePage.css';
+import './ProfilePage.css';
 
 const ProfilePage = ({ currentUser, onBack, onProfileUpdate }) => {
   const [mode, setMode] = useState('view');

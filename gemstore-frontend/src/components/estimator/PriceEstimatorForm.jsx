@@ -1,5 +1,5 @@
 import React from "react";
-import "../../styles/Estimator.css";
+import "./Estimator.css";
 
 function PriceEstimatorForm() {
   return (

@@ -1,6 +1,6 @@
 import React from "react";
 import { FiSearch } from "react-icons/fi";
-import "../../styles/Topbar.css";
+import "./Topbar.css";
 
 const titles = {
   feed: "Explore Gemstones",

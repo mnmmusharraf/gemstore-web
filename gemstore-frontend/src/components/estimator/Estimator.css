@@ -1,4 +1,4 @@
-@import "./theme.css";
+@import "../../styles/theme.css";
 /* Uses shared form/button styles from HomePage.css */
 
 .estimator-result {
