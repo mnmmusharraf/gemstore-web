@@ -3,7 +3,7 @@ import { useLookups } from '../../hooks/useLookups';
 import useListing from '../../hooks/useListing';
 import ImageUploader from './ImageUploader';
 import ListingPreviewModal from './ListingPreviewModal';
-import '../../styles/SellFormSection.css';
+import './SellFormSection.css';
 
 const initialFormState = {
   title: '',

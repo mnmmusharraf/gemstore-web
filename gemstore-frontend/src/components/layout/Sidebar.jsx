@@ -7,7 +7,7 @@ import {
   FiPlusSquare,
   FiUser,
 } from "react-icons/fi";
-import "../../styles/Sidebar.css";
+import "./Sidebar.css";
 
 const navItems = [
   { key: "feed", icon: FiHome, label: "Explore" },

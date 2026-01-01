@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import '../../styles/ImageUploader.css';
+import './ImageUploader.css';
 
 const ImageUploader = ({ images, setImages, maxImages = 10 }) => {
   const fileInputRef = useRef(null);

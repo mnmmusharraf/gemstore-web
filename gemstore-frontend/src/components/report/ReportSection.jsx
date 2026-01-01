@@ -1,5 +1,5 @@
 import React from "react";
-import "../../styles/ReportSection.css";
+import "./ReportSection.css";
 
 function ReportSection() {
   return (

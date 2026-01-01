@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import '../../styles/ListingPreviewModal.css';
+import './ListingPreviewModal.css';
 
 function ListingPreviewModal({ 
   formData, 

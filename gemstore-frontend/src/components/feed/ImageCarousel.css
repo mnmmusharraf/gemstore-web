@@ -1,0 +1,125 @@
+@import "../../styles/theme.css";
+
+.carousel-container {
+  position:  relative;
+  width: 100%;
+  height:  100%;
+  overflow: hidden;
+}
+
+.carousel-track {
+  display: flex;
+  height: 100%;
+  transition:  transform 0.3s ease-out;
+}
+
+.carousel-slide {
+  min-width: 100%;
+  height: 100%;
+}
+
+.carousel-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Navigation Buttons */
+.carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  width: 26px;
+  height: 26px;
+  border-radius:  50%;
+  cursor: pointer;
+  font-size: 1.25rem;
+  line-height: 1;
+  color: #262626;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 2;
+}
+
+.carousel-container:hover .carousel-btn {
+  opacity: 1;
+}
+
+.carousel-btn.prev {
+  left: 0. 5rem;
+}
+
+.carousel-btn.next {
+  right: 0.5rem;
+}
+
+.carousel-btn:hover {
+  background: white;
+}
+
+.carousel-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* Dots */
+.carousel-dots {
+  position: absolute;
+  bottom:  0. 75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.35rem;
+  z-index:  2;
+}
+
+.carousel-dot {
+  width: 6px;
+  height: 6px;
+  border-radius:  50%;
+  background: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition:  background 0.2s ease, transform 0.2s ease;
+}
+
+.carousel-dot.active {
+  background: white;
+  transform: scale(1.15);
+}
+
+/* Touch feedback */
+@media (hover: none) {
+  .carousel-btn {
+    display: none;
+  }
+}
+
+/* Add this to your existing ImageCarousel.css */
+
+.carousel-slide {
+  min-width: 100%;
+  height:  100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:  var(--bg-subtle, #1a1a1a);
+}
+
+.carousel-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Placeholder styling */
+.carousel-slide img[src*="placeholder"] {
+  object-fit: contain;
+  padding: 2rem;
+  opacity: 0.5;
+}

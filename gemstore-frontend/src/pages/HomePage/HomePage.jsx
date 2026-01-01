@@ -1,14 +1,14 @@
 import React, { useState } from "react";
-import "../styles/HomePage.css";
-import Sidebar from "../components/layout/Sidebar";
-import Topbar from "../components/layout/Topbar";
-import Rightbar from "../components/layout/Rightbar";
-import FeedSection from "../components/feed/FeedSection";
-import SellFormSection from "../components/listing/SellFormSection";
-import MessagesSection from "../components/messages/MessagesSection";
-import ReportSection from "../components/report/ReportSection";
-import PriceEstimatorForm from "../components/estimator/PriceEstimatorForm";
-import ProfilePage from "./ProfilePage";
+import "./HomePage.css";
+import Sidebar from "../../components/layout/Sidebar";
+import Topbar from "../../components/layout/Topbar";
+import Rightbar from "../../components/layout/Rightbar";
+import FeedSection from "../../components/feed/FeedSection";
+import SellFormSection from "../../components/listing/SellFormSection";
+import MessagesSection from "../../components/messages/MessagesSection";
+import ReportSection from "../../components/report/ReportSection";
+import PriceEstimatorForm from "../../components/estimator/PriceEstimatorForm";
+import ProfilePage from "../ProfilePage/index";
 
 function HomePage({ currentUser, onLogout }) {
   const [activeTab, setActiveTab] = useState("feed"); // 'feed' | 'sell' | 'messages' | 'report' | 'profile'

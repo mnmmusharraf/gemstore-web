@@ -1,5 +1,5 @@
 import React from "react";
-import "../../styles/MessagesSection.css";
+import "./MessagesSection.css";
 
 const conversations = [
   {

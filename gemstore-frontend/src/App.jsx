@@ -1,7 +1,7 @@
 import { useState } from "react";
 import useAuth from "./hooks/useAuth";
 
-import HomePage from "./pages/HomePage";
+import HomePage from "./pages/HomePage/HomePage";
 import AuthLayout from "./components/auth/AuthLayout";
 import LoginForm from "./components/auth/forms/LoginForm";
 import RegisterForm from "./components/auth/forms/RegisterForm";
