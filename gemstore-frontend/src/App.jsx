@@ -1,17 +1,20 @@
 import { useState } from "react";
+import { Routes, Route, Navigate } from "react-router-dom";  
+import { toast } from "sonner";
+
 import useAuth from "./hooks/useAuth";
 
 import HomePage from "./pages/HomePage/HomePage";
+import ProfilePage from "./pages/ProfilePage/ProfilePage";
+
 import AuthLayout from "./components/auth/AuthLayout";
 import LoginForm from "./components/auth/forms/LoginForm";
 import RegisterForm from "./components/auth/forms/RegisterForm";
 import ForgotPasswordForm from "./components/auth/forms/ForgotPasswordForm";
 import Processing from "./components/common/Processing";
 
-// import { toast } from "react-toastify";
-import { toast } from "sonner";
-
 function App() {
+
   const {
     currentUser,
     login,
@@ -20,17 +23,16 @@ function App() {
     loading,
     authLoading,
     errorMessage,
-    //setErrorMessage,
   } = useAuth();
 
-  const [mode, setMode] = useState("login"); // login | register | forgot
+  const [mode, setMode] = useState("login");
 
-  // login fields
+  // login
   const [emailOrUsername, setEmailOrUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showLoginPassword, setShowLoginPassword] = useState(false);
 
-  // register fields
+  // register
   const [displayName, setDisplayName] = useState("");
   const [username, setUsername] = useState("");
   const [emailForRegister, setEmailForRegister] = useState("");
@@ -39,14 +41,9 @@ function App() {
   // forgot
   const [forgotEmail, setForgotEmail] = useState("");
 
-  // GOOGLE LOGIN
   const handleGoogleSignIn = () => {
     window.location.href = "http://localhost:8080/oauth2/authorization/google";
   };
-
-  // -----------------------------
-  // FORM HANDLERS
-  // -----------------------------
 
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
@@ -71,68 +68,86 @@ function App() {
     setMode("login");
   };
 
-  // -----------------------------
-  // RENDER
-  // -----------------------------
-
   if (loading) {
-  // while checking token in localStorage or URL
-  return <Processing text="Loading..." />;
-}
-
-  if (currentUser) {
-    return <HomePage currentUser={currentUser} onLogout={logout} />;
+    return <Processing text="Loading..." />;
   }
 
   return (
-    <AuthLayout mode={mode} errorMessage={errorMessage}>
-      {mode === "login" && (
-        <LoginForm
-          emailOrUsername={emailOrUsername}
-          setEmailOrUsername={setEmailOrUsername}
-          password={password}
-          setPassword={setPassword}
-          loading={authLoading}
-          showPassword={showLoginPassword}
-          setShowPassword={setShowLoginPassword}
-          onSubmit={handleLoginSubmit}
-          onGoogleSignIn={handleGoogleSignIn}
-          switchToRegister={() => setMode("register")}
-          switchToForgot={() => {
-            setForgotEmail(emailOrUsername);
-            setMode("forgot");
-          }}
-        />
-      )}
+    <Routes>
+      {/* ===== HOME ===== */}
+      <Route
+        path="/"
+        element={
+          currentUser ? (
+            <HomePage currentUser={currentUser} onLogout={logout} />
+          ) : (
+            <Navigate to="/auth" />
+          )
+        }
+      />
 
-      {mode === "register" && (
-        <RegisterForm
-          displayName={displayName}
-          setDisplayName={setDisplayName}
-          username={username}
-          setUsername={setUsername}
-          emailForRegister={emailForRegister}
-          setEmailForRegister={setEmailForRegister}
-          password={password}
-          setPassword={setPassword}
-          loading={authLoading}
-          showPassword={showRegisterPassword}
-          setShowPassword={setShowRegisterPassword}
-          onSubmit={handleRegisterSubmit}
-          switchToLogin={() => setMode("login")}
-        />
-      )}
+      {/* ===== AUTH ===== */}
+      <Route
+        path="/auth"
+        element={
+          currentUser ? (
+            <Navigate to="/" />
+          ) : (
+            <AuthLayout mode={mode} errorMessage={errorMessage}>
+              {mode === "login" && (
+                <LoginForm
+                  emailOrUsername={emailOrUsername}
+                  setEmailOrUsername={setEmailOrUsername}
+                  password={password}
+                  setPassword={setPassword}
+                  loading={authLoading}
+                  showPassword={showLoginPassword}
+                  setShowPassword={setShowLoginPassword}
+                  onSubmit={handleLoginSubmit}
+                  onGoogleSignIn={handleGoogleSignIn}
+                  switchToRegister={() => setMode("register")}
+                  switchToForgot={() => {
+                    setForgotEmail(emailOrUsername);
+                    setMode("forgot");
+                  }}
+                />
+              )}
 
-      {mode === "forgot" && (
-        <ForgotPasswordForm
-          forgotEmail={forgotEmail}
-          setForgotEmail={setForgotEmail}
-          loading={authLoading}
-          onSubmit={handleForgotPasswordSubmit}
-          switchToLogin={() => setMode("login")}
-        />
-      )}
-    </AuthLayout>
+              {mode === "register" && (
+                <RegisterForm
+                  displayName={displayName}
+                  setDisplayName={setDisplayName}
+                  username={username}
+                  setUsername={setUsername}
+                  emailForRegister={emailForRegister}
+                  setEmailForRegister={setEmailForRegister}
+                  password={password}
+                  setPassword={setPassword}
+                  loading={authLoading}
+                  showPassword={showRegisterPassword}
+                  setShowPassword={setShowRegisterPassword}
+                  onSubmit={handleRegisterSubmit}
+                  switchToLogin={() => setMode("login")}
+                />
+              )}
+
+              {mode === "forgot" && (
+                <ForgotPasswordForm
+                  forgotEmail={forgotEmail}
+                  setForgotEmail={setForgotEmail}
+                  loading={authLoading}
+                  onSubmit={handleForgotPasswordSubmit}
+                  switchToLogin={() => setMode("login")}
+                />
+              )}
+            </AuthLayout>
+          )
+        }
+      />
+
+      {/* ===== FALLBACK ===== */}
+      <Route path="*" element={<Navigate to="/" />} />
+    </Routes>
   );
 }
 

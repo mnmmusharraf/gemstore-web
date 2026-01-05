@@ -4,7 +4,7 @@ import FeedCard from './FeedCard';
 import FeedSkeleton from './FeedSkeleton';
 import './FeedSection.css';
 
-function FeedSection() {
+function FeedSection({onSellerClick})  {
   const {
     listings = [],  // Default to empty array
     loading,
@@ -86,6 +86,7 @@ function FeedSection() {
             onLike={toggleLike}
             onSave={toggleFavorite}
             isAuthenticated={isAuthenticated}
+            onSellerClick={onSellerClick}
           />
         </div>
       ))}

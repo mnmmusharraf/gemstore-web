@@ -9,40 +9,83 @@ import MessagesSection from "../../components/messages/MessagesSection";
 import ReportSection from "../../components/report/ReportSection";
 import PriceEstimatorForm from "../../components/estimator/PriceEstimatorForm";
 import ProfilePage from "../ProfilePage/ProfilePage";
+import PublicProfilePage from "../PublicProfilePage/PublicProfilePage";
 
 function HomePage({ currentUser, onLogout }) {
-  const [activeTab, setActiveTab] = useState("feed"); // 'feed' | 'sell' | 'messages' | 'report' | 'profile'
+  const [activeTab, setActiveTab] = useState("feed");
+  const [viewingUserId, setViewingUserId] = useState(null);  //  Track which user's profile to view
+
+  // Handle clicking on a seller in the feed
+  const handleSellerClick = (sellerId) => {
+    // Check if clicking on own profile
+    if (sellerId === currentUser?. id) {
+      setActiveTab("profile");
+      setViewingUserId(null);
+    } else {
+      setActiveTab("publicProfile");
+      setViewingUserId(sellerId);
+    }
+  };
+
+  // Handle back from public profile
+  const handleBackFromPublicProfile = () => {
+    setActiveTab("feed");
+    setViewingUserId(null);
+  };
 
   const mainRootClass =
-    "main-root" + (activeTab === "profile" ? " main-root--profile" : "");
+    "main-root" +
+    (activeTab === "profile" || activeTab === "publicProfile"
+      ? " main-root--profile"
+      : "");
 
   return (
     <div className={mainRootClass}>
       <Sidebar
         activeTab={activeTab}
-        onChangeTab={setActiveTab}
+        onChangeTab={(tab) => {
+          setActiveTab(tab);
+          setViewingUserId(null);  // Reset when changing tabs via sidebar
+        }}
         currentUser={currentUser}
         onLogout={onLogout}
       />
 
       <main className="main-content">
-        {activeTab !== "profile" && (
+        {activeTab !== "profile" && activeTab !== "publicProfile" && (
           <Topbar activeTab={activeTab} />
         )}
 
-        {activeTab === "feed" && <FeedSection />}
+        {activeTab === "feed" && (
+          <FeedSection 
+            onSellerClick={handleSellerClick}  //  Pass the handler
+          />
+        )}
+        
         {activeTab === "sell" && <SellFormSection />}
         {activeTab === "messages" && <MessagesSection />}
         {activeTab === "report" && <ReportSection />}
+
         {activeTab === "profile" && (
           <ProfilePage
             currentUser={currentUser}
             onBack={() => setActiveTab("feed")}
+            onProfileUpdate={(updatedUser) => {
+              console.log("Profile updated:", updatedUser);
+            }}
+          />
+        )}
+
+        {activeTab === "publicProfile" && viewingUserId && (
+          <PublicProfilePage
+            currentUser={currentUser}
+            userId={viewingUserId}  //  Pass userId as prop
+            onBack={handleBackFromPublicProfile}  //  Add back handler
           />
         )}
       </main>
 
-      {activeTab !== "profile" && (
+      {activeTab !== "profile" && activeTab !== "publicProfile" && (
         <Rightbar>
           <PriceEstimatorForm />
         </Rightbar>
