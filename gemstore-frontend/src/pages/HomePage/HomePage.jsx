@@ -8,7 +8,7 @@ import SellFormSection from "../../components/listing/SellFormSection";
 import MessagesSection from "../../components/messages/MessagesSection";
 import ReportSection from "../../components/report/ReportSection";
 import PriceEstimatorForm from "../../components/estimator/PriceEstimatorForm";
-import ProfilePage from "../ProfilePage/index";
+import ProfilePage from "../ProfilePage/ProfilePage";
 
 function HomePage({ currentUser, onLogout }) {
   const [activeTab, setActiveTab] = useState("feed"); // 'feed' | 'sell' | 'messages' | 'report' | 'profile'

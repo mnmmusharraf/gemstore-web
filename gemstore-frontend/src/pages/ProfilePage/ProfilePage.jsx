@@ -1,5 +1,5 @@
-// src/pages/ProfilePage/index.jsx
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import useProfile from '../../hooks/useProfile';
 import ProfileHeader from '../../components/profile/ProfileHeader';
 import ProfileEditForm from '../../components/profile/ProfileEditForm';
@@ -10,16 +10,22 @@ import './ProfilePage.css';
 
 const ProfilePage = ({ currentUser, onBack, onProfileUpdate }) => {
   const [mode, setMode] = useState('view');
+  const navigate = useNavigate();
 
   const {
     profile,
+    listings,
+    favorites,
     loading,
+    listingsLoading,
+    favoritesLoading,
     saving,
     error,
     success,
     updateProfile,
     uploadAvatar,
     removeAvatar,
+    fetchFavorites,
     clearError,
     clearSuccess,
   } = useProfile(currentUser, onProfileUpdate);
@@ -30,6 +36,10 @@ const ProfilePage = ({ currentUser, onBack, onProfileUpdate }) => {
       setMode('view');
     }
     return success;
+  };
+
+  const handleListingClick = (listingId) => {
+    navigate(`/listing/${listingId}`);
   };
 
   if (loading) {
@@ -57,7 +67,14 @@ const ProfilePage = ({ currentUser, onBack, onProfileUpdate }) => {
         />
 
         {mode === 'view' && (
-          <ProfilePostsGrid postsCount={profile. postsCount} posts={[]} />
+          <ProfilePostsGrid
+            listings={listings}
+            favorites={favorites}
+            listingsLoading={listingsLoading}
+            favoritesLoading={favoritesLoading}
+            onFetchFavorites={fetchFavorites}
+            onListingClick={handleListingClick}
+          />
         )}
 
         {mode === 'edit' && (
