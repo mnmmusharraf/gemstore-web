@@ -10,6 +10,7 @@ import ReportSection from "../../components/report/ReportSection";
 import PriceEstimatorForm from "../../components/estimator/PriceEstimatorForm";
 import ProfilePage from "../ProfilePage/ProfilePage";
 import PublicProfilePage from "../PublicProfilePage/PublicProfilePage";
+import NotificationsSection from "../../components/notifications/NotificationsSection";
 
 function HomePage({ currentUser, onLogout }) {
   const [activeTab, setActiveTab] = useState("feed");
@@ -79,8 +80,14 @@ function HomePage({ currentUser, onLogout }) {
         {activeTab === "publicProfile" && viewingUserId && (
           <PublicProfilePage
             currentUser={currentUser}
-            userId={viewingUserId}  //  Pass userId as prop
-            onBack={handleBackFromPublicProfile}  //  Add back handler
+            userId={viewingUserId}  
+            onBack={handleBackFromPublicProfile}  
+          />
+        )}
+        {activeTab === "notifications" && (
+          <NotificationsSection
+            currentUser={currentUser}
+            onUserClick={handleSellerClick}  //  Reuse the same handler
           />
         )}
       </main>
