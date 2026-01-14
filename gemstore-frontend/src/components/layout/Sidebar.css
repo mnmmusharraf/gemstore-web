@@ -1,12 +1,15 @@
 @import "../../styles/theme.css";
 
-/* Left sidebar */
+/* ================= SIDEBAR CONTAINER ================= */
+
 .main-sidebar {
   border-right: 1px solid var(--border-soft);
   padding: 1.5rem 0.75rem;
   display: flex;
   flex-direction: column;
 }
+
+/* ================= HEADER ================= */
 
 .sidebar-header {
   display: flex;
@@ -42,7 +45,8 @@
   color: var(--text-subtle);
 }
 
-/* Nav */
+/* ================= NAVIGATION ================= */
+
 .sidebar-nav {
   display: flex;
   flex-direction: column;
@@ -79,74 +83,8 @@
   flex-shrink: 0;
 }
 
-/* Footer */
-.sidebar-footer {
-  margin-top: auto;
-  padding: 1rem 0.5rem 0.25rem;
-  border-top: 1px solid var(--border-soft);
-}
+/* ================= BADGE ================= */
 
-.sidebar-user {
-  display: flex;
-  align-items: center;
-  margin-bottom: 0.75rem;
-}
-
-.sidebar-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 999px;
-  background: linear-gradient(135deg, #22c55e, #14b8a6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  color: #0f172a;
-  margin-right: 0.5rem;
-}
-
-.sidebar-user-info {
-  display: flex;
-  flex-direction: column;
-}
-
-.sidebar-user-name {
-  font-size: 0.9rem;
-}
-
-.sidebar-user-handle {
-  font-size: 0.8rem;
-  color: var(--text-subtle);
-}
-
-.sidebar-logout-btn {
-  width: 100%;
-  border-radius: 999px;
-  border: none;
-  color: var(--text-main);
-  padding: 0.45rem 0.75rem;
-  cursor: pointer;
-  font-size: 0.85rem;
-  background: var(--logout-bg);
-  transition: background 0.15s ease, transform 0.1s ease;
-}
-
-.sidebar-logout-btn:hover {
-  background: var(--logout-hover-bg);
-  transform: translateY(-0.5px);
-}
-
-/* Compact on tablet */
-@media (max-width: 1024px) {
-  .sidebar-logo-text {
-    display: none;
-  }
-  .sidebar-user-info {
-    display: none;
-  }
-}
-
-/* ===== ICON WRAPPER (for badge positioning) ===== */
 .sidebar-icon-wrapper {
   position: relative;
   display: inline-flex;
@@ -154,9 +92,8 @@
   justify-content: center;
 }
 
-/* ===== NOTIFICATION BADGE ===== */
 .sidebar-badge {
-  position:  absolute;
+  position: absolute;
   top: -6px;
   right: -10px;
   min-width: 18px;
@@ -173,16 +110,10 @@
   line-height: 1;
 }
 
-/* ===== AVATAR IMAGE ===== */
-.sidebar-avatar-img {
-  width:  100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 50%;
-}
+/* ================= RESPONSIVE ================= */
 
-/* ===== CLICKABLE USER ===== */
-.sidebar-user:hover {
-  background: var(--sidebar-hover-bg, rgba(255, 255, 255, 0.06));
-  border-radius: 8px;
+@media (max-width: 1024px) {
+  .sidebar-logo-text {
+    display: none;
+  }
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import {
   FiHome,
   FiPlusSquare,
@@ -6,6 +6,7 @@ import {
   FiCompass,
   FiUser,
   FiBell,
+  FiLogOut,
 } from "react-icons/fi";
 import { API_BASE_URL, getAuthHeaders } from "../../api/config";
 import "./Sidebar.css";
@@ -13,6 +14,7 @@ import {
   connectNotificationSocket,
   disconnectNotificationSocket,
 } from "../../api/notificationSocket";
+import "./SidebarFooter.css";
 
 const navItems = [
   { key: "feed", icon: FiHome, label: "Explore" },
@@ -30,8 +32,17 @@ function Sidebar({ activeTab, onChangeTab, currentUser, onLogout }) {
   // ✅ store callback safely
   const onNewNotificationRef = useRef(null);
 
-  /* ================= SOCKET ================= */
+  // ✅ only used when image fails (to switch to fallback)
+  const [avatarBroken, setAvatarBroken] = useState(false);
 
+  // ✅ changes when user/avatar changes (no effect needed)
+  const avatarKey = useMemo(() => {
+    const id = currentUser?.id ?? "no-user";
+    const url = currentUser?.avatarUrl ?? "no-avatar";
+    return `${id}:${url}`;
+  }, [currentUser?.id, currentUser?.avatarUrl]);
+
+  /* ================= SOCKET ================= */
   useEffect(() => {
     if (!currentUser?.id) return;
 
@@ -39,8 +50,6 @@ function Sidebar({ activeTab, onChangeTab, currentUser, onLogout }) {
       if (!payload?.isRead) {
         setUnreadCount((prev) => prev + 1);
       }
-
-      // ✅ safe callback execution
       onNewNotificationRef.current?.(payload);
     });
 
@@ -48,7 +57,6 @@ function Sidebar({ activeTab, onChangeTab, currentUser, onLogout }) {
   }, [currentUser?.id]);
 
   /* ================= FETCH COUNTS ================= */
-
   useEffect(() => {
     if (!currentUser?.id) return;
 
@@ -84,17 +92,19 @@ function Sidebar({ activeTab, onChangeTab, currentUser, onLogout }) {
   }, [currentUser?.id]);
 
   /* ================= CALLBACKS ================= */
-
   const handleNotificationRead = (count = 1) => {
     setUnreadCount((prev) => Math.max(prev - count, 0));
   };
 
   const totalNotificationBadge = unreadCount + requestsCount;
 
-  /* ================= RENDER ================= */
+  const initial =
+    (currentUser?.displayName || currentUser?.username || "U")[0]?.toUpperCase();
 
+  /* ================= RENDER ================= */
   return (
     <aside className="main-sidebar">
+      {/* Header */}
       <div className="sidebar-header">
         <div className="sidebar-logo-circle">G</div>
         <div className="sidebar-logo-text">
@@ -103,6 +113,7 @@ function Sidebar({ activeTab, onChangeTab, currentUser, onLogout }) {
         </div>
       </div>
 
+      {/* Navigation */}
       <nav className="sidebar-nav">
         {navItems.map(({ key, icon, label }) => (
           <button
@@ -133,26 +144,53 @@ function Sidebar({ activeTab, onChangeTab, currentUser, onLogout }) {
         ))}
       </nav>
 
+      {/* Footer */}
       <div className="sidebar-footer">
         {currentUser && (
-          <div
-            className="sidebar-user"
-            onClick={() => onChangeTab("profile")}
-          >
-            <div className="sidebar-avatar">
-              {currentUser.avatarUrl ? (
-                <img src={currentUser.avatarUrl} alt={currentUser.username} />
-              ) : (
-                currentUser.username?.[0]?.toUpperCase()
-              )}
-            </div>
-            <div>
-              <div>{currentUser.displayName || currentUser.username}</div>
-              <div>@{currentUser.username}</div>
-            </div>
+          <div className="sidebar-footer-row">
+            <button
+              type="button"
+              className="sidebar-user-btn"
+              onClick={() => onChangeTab("profile")}
+              title="Open profile"
+            >
+              <div className="sidebar-avatar">
+                {/* key resets the <img> when user/avatar changes */}
+                {currentUser.avatarUrl && !avatarBroken ? (
+                  <img
+                    key={avatarKey}
+                    src={currentUser.avatarUrl}
+                    alt={currentUser.username}
+                    className="sidebar-avatar-img"
+                    onLoad={() => setAvatarBroken(false)}
+                    onError={() => setAvatarBroken(true)}
+                  />
+                ) : (
+                  <span className="sidebar-avatar-fallback">{initial}</span>
+                )}
+              </div>
+
+              <div className="sidebar-user-info">
+                <div className="sidebar-user-name">
+                  {currentUser.displayName || currentUser.username}
+                </div>
+                <div className="sidebar-user-handle">
+                  @{currentUser.username}
+                </div>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              className="sidebar-logout-icon-btn"
+              onClick={onLogout}
+              title="Logout"
+              aria-label="Logout"
+            >
+              <FiLogOut />
+            </button>
           </div>
         )}
-        <button onClick={onLogout}>Logout</button>
       </div>
     </aside>
   );

@@ -9,6 +9,7 @@ const NotificationsSection = ({ currentUser, onUserClick, onNotificationRead }) 
   const [followRequests, setFollowRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [requestsLoading, setRequestsLoading] = useState(false);
+  const [requestActionLoading, setRequestActionLoading] = useState({});
   const [error, setError] = useState('');
 
   /* ================= FETCH NOTIFICATIONS ================= */
@@ -105,6 +106,50 @@ const NotificationsSection = ({ currentUser, onUserClick, onNotificationRead }) 
     }
   };
 
+  const acceptFollowRequest = async (userId) => {
+    if (!userId) return;
+    setRequestActionLoading((prev) => ({ ...prev, [userId]: 'accept' }));
+
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/v1/users/follow-requests/${userId}/accept`,
+        { method: 'POST', headers: getAuthHeaders() }
+      );
+      await handleResponse(response);
+      setFollowRequests((prev) => prev.filter((r) => r.id !== userId));
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setRequestActionLoading((prev) => {
+        const next = { ...prev };
+        delete next[userId];
+        return next;
+      });
+    }
+  };
+
+  const rejectFollowRequest = async (userId) => {
+    if (!userId) return;
+    setRequestActionLoading((prev) => ({ ...prev, [userId]: 'reject' }));
+
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/v1/users/follow-requests/${userId}/reject`,
+        { method: 'POST', headers: getAuthHeaders() }
+      );
+      await handleResponse(response);
+      setFollowRequests((prev) => prev.filter((r) => r.id !== userId));
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setRequestActionLoading((prev) => {
+        const next = { ...prev };
+        delete next[userId];
+        return next;
+      });
+    }
+  };
+
   /* ================= FILTERING ================= */
 
   const filteredNotifications = (() => {
@@ -156,19 +201,22 @@ const NotificationsSection = ({ currentUser, onUserClick, onNotificationRead }) 
       </div>
 
       <div className="notifications-content">
-        {loading ? (
+        {activeTab === 'requests' ? (
+          <FollowRequestsList
+            requests={followRequests}
+            loading={requestsLoading}
+            onUserClick={handleUserProfileClick}
+            onAccept={acceptFollowRequest}
+            onReject={rejectFollowRequest}
+            actionLoading={requestActionLoading}
+          />
+        ) : loading ? (
           <LoadingSpinner message="Loading notifications..." />
         ) : error ? (
           <div className="notifications-error">
             <p>{error}</p>
             <button onClick={fetchNotifications}>Retry</button>
           </div>
-        ) : activeTab === 'requests' ? (
-          <FollowRequestsList
-            requests={followRequests}
-            loading={requestsLoading}
-            onUserClick={handleUserProfileClick}
-          />
         ) : filteredNotifications.length === 0 ? (
           <EmptyState tab={activeTab} />
         ) : (
@@ -216,15 +264,62 @@ const NotificationItem = ({ notification, currentUserId, onUserClick, onMarkAsRe
 
 /* ================= HELPERS ================= */
 
-const FollowRequestsList = ({ requests, loading, onUserClick }) => {
+const FollowRequestsList = ({ requests, loading, onUserClick, onAccept, onReject, actionLoading }) => {
   if (loading) return <LoadingSpinner message="Loading requests..." />;
   if (!requests.length) return <EmptyState tab="requests" />;
 
-  return requests.map((r) => (
-    <div key={r.id} onClick={() => onUserClick(r.id)}>
-      {r.username}
+  return (
+    <div className="follow-requests-list">
+      {requests.map((r) => {
+        const userId = r.id;
+        const username = r.username || 'Unknown';
+        const displayName = r.displayName || r.name || '';
+        const initial = username[0]?.toUpperCase() || 'U';
+        const isAccepting = actionLoading?.[userId] === 'accept';
+        const isRejecting = actionLoading?.[userId] === 'reject';
+        const isBusy = Boolean(actionLoading?.[userId]);
+
+        return (
+          <div key={userId} className="follow-request-item">
+            <div className="request-user" onClick={() => onUserClick(userId)}>
+              <div className="request-avatar" aria-hidden="true">
+                <div className="avatar-placeholder">{initial}</div>
+              </div>
+              <div className="request-info">
+                <span className="request-username">{username}</span>
+                {displayName && <span className="request-name">{displayName}</span>}
+              </div>
+            </div>
+
+            <div className="request-actions">
+              <button
+                type="button"
+                className="accept-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAccept?.(userId);
+                }}
+                disabled={isBusy}
+              >
+                {isAccepting ? 'Accepting...' : 'Accept'}
+              </button>
+              <button
+                type="button"
+                className="reject-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onReject?.(userId);
+                }}
+                disabled={isBusy}
+              >
+                {isRejecting ? 'Rejecting...' : 'Reject'}
+              </button>
+            </div>
+          </div>
+        );
+      })}
     </div>
-  ));
+  );
 };
 
 const EmptyState = ({ tab }) => (
