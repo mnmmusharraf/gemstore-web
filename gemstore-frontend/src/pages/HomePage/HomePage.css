@@ -153,3 +153,15 @@
     border-right: none;
   }
 }
+
+/* Full width mode (for profile, notifications, etc.) */
+.main-root--full-width .main-content {
+  max-width: 935px;
+  margin: 0 auto;
+}
+
+/* Keep existing profile class as alias */
+.main-root--profile .main-content {
+  max-width: 935px;
+  margin: 0 auto;
+}

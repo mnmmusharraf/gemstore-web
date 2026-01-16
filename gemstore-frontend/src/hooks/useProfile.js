@@ -1,262 +1,237 @@
-import { useState, useEffect } from 'react';
-import { getAuthToken, removeAuthToken} from '../api/config';
+import { useState, useEffect, useCallback } from 'react';
+import { getMyListings, getMyFavorites } from '../api/profileService';
+import { 
+  API_BASE_URL, 
+  getAuthHeaders, 
+  getAuthHeaderOnly, 
+  handleResponse 
+} from '../api/config';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
-
-export const useProfile = (currentUser, onProfileUpdate) => {
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null);
+const useProfile = (currentUser, onProfileUpdate) => {
   const [profile, setProfile] = useState({
     displayName: '',
     username: '',
     email: '',
-    website: '',
     bio: '',
+    website:  '',
+    avatarUrl: '',
     privateProfile: false,
-    avatarUrl: null,
     postsCount: 0,
     followersCount: 0,
-    followingCount:  0,
+    followingCount: 0,
   });
 
-  // Auto-hide success message
+  const [listings, setListings] = useState([]);
+  const [favorites, setFavorites] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [listingsLoading, setListingsLoading] = useState(false);
+  const [favoritesLoading, setFavoritesLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  // ==================== LOAD PROFILE ====================
   useEffect(() => {
-    if (success) {
-      const timer = setTimeout(() => setSuccess(null), 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [success]);
-
-  // const getAuthToken = () => {
-  //   return localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-  // };
-
-  const handleUnauthorized = () => {
-    removeAuthToken();
-    window.location.href = '/login';
-  }
-
-  const fetchProfile = async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const token = getAuthToken();
-      if (!token) {
-        throw new Error('Not authenticated. Please log in.');
-      }
-
-      const response = await fetch(`${API_BASE_URL}/users/me`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
+    if (currentUser) {
+      setProfile({
+        displayName: currentUser. displayName || '',
+        username:  currentUser.username || '',
+        email: currentUser.email || '',
+        bio: currentUser.bio || '',
+        website: currentUser.website || '',
+        avatarUrl: currentUser.avatarUrl || '',
+        privateProfile: currentUser.privateProfile || false,
+        postsCount: currentUser. postsCount || 0,
+        followersCount: currentUser. followersCount || 0,
+        followingCount: currentUser. followingCount || 0,
       });
-
-      if (response.status === 401) {
-        handleUnauthorized();
-        throw new Error('Session expired. Please log in again.');
-      }
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch profile');
-      }
-
-      const data = await response.json();
-      const profileData = mapProfileData(data);
-      setProfile(profileData);
-
-    } catch (err) {
-      console.error('Error fetching profile:', err);
-      setError(err.message);
-
-      // Fallback to currentUser prop
-      if (currentUser) {
-        setProfile(mapProfileData(currentUser));
-      }
-    } finally {
       setLoading(false);
     }
-  };
+  }, [currentUser]);
 
+  // ==================== FETCH LISTINGS ====================
+  const fetchListings = useCallback(async (page = 0) => {
+    setListingsLoading(true);
+    try {
+      const response = await getMyListings(null, page, 20);
+      if (response.success) {
+        setListings(response.data?.content || []);
+        // Update posts count
+        setProfile((prev) => ({
+          ...prev,
+          postsCount: response.data?. totalElements || 0,
+        }));
+      }
+    } catch (err) {
+      console.error('Failed to fetch listings:', err);
+      setError('Failed to load listings');
+    } finally {
+      setListingsLoading(false);
+    }
+  }, []);
+
+  // ==================== FETCH FAVORITES ====================
+  const fetchFavorites = useCallback(async (page = 0) => {
+    setFavoritesLoading(true);
+    try {
+      const response = await getMyFavorites(page, 20);
+      if (response.success) {
+        setFavorites(response.data?. content || []);
+      }
+    } catch (err) {
+      console.error('Failed to fetch favorites:', err);
+      setError('Failed to load favorites');
+    } finally {
+      setFavoritesLoading(false);
+    }
+  }, []);
+
+  // Load listings on mount
+  useEffect(() => {
+    if (currentUser?. id) {
+      fetchListings();
+    }
+  }, [currentUser?.id, fetchListings]);
+
+  // ==================== UPDATE PROFILE ====================
   const updateProfile = async (formData) => {
     setSaving(true);
-    setError(null);
-    setSuccess(null);
-
+    setError('');
     try {
-      const token = getAuthToken();
-      if (!token) {
-        throw new Error('Not authenticated. Please log in.');
-      }
-
-      const response = await fetch(`${API_BASE_URL}/users/me`, {
+      const response = await fetch(`${API_BASE_URL}/api/users/me`, {
         method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
-          displayName: formData.displayName,
-          website: formData.website,
+          displayName: formData. displayName,
           bio: formData.bio,
+          website: formData.website,
           privateProfile: formData.privateProfile,
         }),
       });
 
-      if (response.status === 401) {
-        handleUnauthorized();
-        throw new Error('Session expired. Please log in again.');
+      const data = await handleResponse(response);
+
+      // Update local profile state
+      setProfile((prev) => ({
+        ...prev,
+        displayName: data. displayName || prev.displayName,
+        bio: data.bio || '',
+        website: data.website || '',
+        privateProfile: data.privateProfile || false,
+      }));
+
+      // Notify parent component
+      if (onProfileUpdate) {
+        onProfileUpdate(data);
       }
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || 'Failed to update profile');
-      }
-
-      const updatedUser = await response.json();
-      const updatedProfile = {
-        ...profile,
-        displayName: updatedUser.displayName || formData.displayName,
-        website: updatedUser.website || formData.website,
-        bio: updatedUser.bio || formData.bio,
-        privateProfile: updatedUser.privateProfile ?? formData.privateProfile,
-      };
-
-      setProfile(updatedProfile);
-      setSuccess('Profile updated successfully!');
-      onProfileUpdate?.(updatedUser);
-
-      return true; // Success
+      setSuccess('Profile updated successfully');
+      return true;
     } catch (err) {
-      console.error('Error updating profile:', err);
-      setError(err.message);
-      return false; // Failed
+      console.error('Failed to update profile:', err);
+      setError(err.message || 'Failed to update profile');
+      return false;
     } finally {
       setSaving(false);
     }
   };
 
+  // ==================== UPLOAD AVATAR ====================
   const uploadAvatar = async (file) => {
     setSaving(true);
-    setError(null);
-
+    setError('');
     try {
-      const token = getAuthToken();
-      if (!token) {
-        throw new Error('Not authenticated. Please log in.');
-      }
+      const formData = new FormData();
+      formData.append('avatar', file);
 
-      const formDataUpload = new FormData();
-      formDataUpload.append('avatar', file);
-
-      const response = await fetch(`${API_BASE_URL}/users/me/avatar`, {
+      const response = await fetch(`${API_BASE_URL}/api/users/me/avatar`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-        body: formDataUpload,
+        headers: getAuthHeaderOnly(), // No Content-Type for FormData
+        body: formData,
       });
 
-      if (response.status === 401) {
-        handleUnauthorized();
-        throw new Error('Session expired. Please log in again.');
+      const data = await handleResponse(response);
+
+      // Update local profile state
+      setProfile((prev) => ({
+        ...prev,
+        avatarUrl: data.avatarUrl,
+      }));
+
+      // Notify parent component
+      if (onProfileUpdate) {
+        onProfileUpdate({ ... profile, avatarUrl: data.avatarUrl });
       }
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || 'Failed to upload avatar');
-      }
-
-      const data = await response.json();
-      setProfile(prev => ({ ...prev, avatarUrl: data.avatarUrl || null }));
-      setSuccess('Avatar updated successfully!');
-      onProfileUpdate?.({ ...profile, avatarUrl: data.avatarUrl || null });
-
+      setSuccess('Profile photo updated');
+      return true;
     } catch (err) {
-      console.error('Error uploading avatar:', err);
-      setError(err.message);
+      console.error('Failed to upload avatar:', err);
+      setError(err.message || 'Failed to upload photo');
+      return false;
     } finally {
       setSaving(false);
     }
   };
 
+  // ==================== REMOVE AVATAR ====================
   const removeAvatar = async () => {
     setSaving(true);
-    setError(null);
-
+    setError('');
     try {
-      const token = getAuthToken();
-      if (!token) {
-        throw new Error('Not authenticated. Please log in.');
-      }
-
-      const response = await fetch(`${API_BASE_URL}/users/me/avatar`, {
+      const response = await fetch(`${API_BASE_URL}/api/users/me/avatar`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        headers: getAuthHeaders(),
       });
 
-      if (response.status === 401) {
-        handleUnauthorized();
-        throw new Error('Session expired. Please log in again.');
+      if (! response.ok && response.status !== 204) {
+        throw new Error('Failed to remove photo');
       }
 
-      if (!response.ok) {
-        throw new Error('Failed to remove avatar');
+      // Update local profile state
+      setProfile((prev) => ({
+        ...prev,
+        avatarUrl: '',
+      }));
+
+      // Notify parent component
+      if (onProfileUpdate) {
+        onProfileUpdate({ ...profile, avatarUrl: '' });
       }
 
-      setProfile(prev => ({ ...prev, avatarUrl: null }));
-      setSuccess('Avatar removed successfully!');
-      onProfileUpdate?.({ ...profile, avatarUrl: null });
-
+      setSuccess('Profile photo removed');
+      return true;
     } catch (err) {
-      console.error('Error removing avatar:', err);
-      setError(err.message);
+      console.error('Failed to remove avatar:', err);
+      setError(err.message || 'Failed to remove photo');
+      return false;
     } finally {
       setSaving(false);
     }
   };
 
-  const clearError = () => setError(null);
-  const clearSuccess = () => setSuccess(null);
-
-  // Fetch on mount
-  useEffect(() => {
-    fetchProfile();
-  }, []);
+  // ==================== HELPERS ====================
+  const clearError = () => setError('');
+  const clearSuccess = () => setSuccess('');
 
   return {
     profile,
+    listings,
+    favorites,
     loading,
+    listingsLoading,
+    favoritesLoading,
     saving,
     error,
     success,
-    fetchProfile,
     updateProfile,
     uploadAvatar,
     removeAvatar,
+    fetchListings,
+    fetchFavorites,
     clearError,
     clearSuccess,
   };
 };
-
-// Helper function to map API response
-const mapProfileData = (data) => ({
-  displayName: data.displayName || data.display_name || '',
-  username: data.username || '',
-  email: data.email || '',
-  website: data.website || '',
-  bio: data.bio || '',
-  privateProfile: data.privateProfile || data.private_profile || false,
-  avatarUrl: data.avatarUrl || data.avatar_url || null,
-  postsCount: data.postsCount || data.posts_count || 0,
-  followersCount: data.followersCount || data.followers_count || 0,
-  followingCount: data.followingCount || data.following_count || 0,
-});
 
 export default useProfile;

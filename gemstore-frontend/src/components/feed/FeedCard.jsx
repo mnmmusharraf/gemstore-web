@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import ImageCarousel from './ImageCarousel';
 import './FeedCard.css';
 
-const FeedCard = memo(function FeedCard({ listing, onLike, onSave, isAuthenticated }) {
+const FeedCard = memo(function FeedCard({ listing, onLike, onSave, isAuthenticated, onSellerClick }) {
   const navigate = useNavigate();
   const [isLiking, setIsLiking] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -175,9 +175,23 @@ const FeedCard = memo(function FeedCard({ listing, onLike, onSave, isAuthenticat
 
   // Navigation handlers
   const handleSellerClick = (e) => {
-    e.stopPropagation();
-    if (sellerId) navigate(`/seller/${sellerId}`);
-  };
+  e.stopPropagation();
+  e.preventDefault();
+
+  if (!sellerId) {
+    console.warn('⚠️ sellerId is undefined!');
+    return;
+  }
+
+  //  let parent decide what to do
+  if (typeof onSellerClick === 'function') {
+    onSellerClick(sellerId);
+  } else {
+    //  route-based navigation
+    navigate(`/user/${sellerId}`);
+  }
+};
+
 
   const handleCardClick = () => navigate(`/listing/${id}`);
 
