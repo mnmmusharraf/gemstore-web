@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import "./HomePage.css";
 import Sidebar from "../../components/layout/Sidebar";
 import Topbar from "../../components/layout/Topbar";
@@ -15,6 +15,15 @@ import NotificationsSection from "../../components/notifications/NotificationsSe
 function HomePage({ currentUser, onLogout }) {
   const [activeTab, setActiveTab] = useState("feed");
   const [viewingUserId, setViewingUserId] = useState(null);  //  Track which user's profile to view
+  const [notificationApi, setNotificationApi] = useState(null);
+
+  const notificationProps = useMemo(() => {
+    if (!notificationApi) return {};
+    return {
+      onNotificationRead: notificationApi.onNotificationRead,
+      onNewNotification: notificationApi.onNewNotification,
+    };
+  }, [notificationApi]);
 
   // Handle clicking on a seller in the feed
   const handleSellerClick = (sellerId) => {
@@ -44,9 +53,10 @@ function HomePage({ currentUser, onLogout }) {
     <div className={mainRootClass}>
       <Sidebar
         activeTab={activeTab}
-        onChangeTab={(tab) => {
+        onChangeTab={(tab, api) => {
           setActiveTab(tab);
           setViewingUserId(null);  // Reset when changing tabs via sidebar
+          if (api) setNotificationApi(api);
         }}
         currentUser={currentUser}
         onLogout={onLogout}
@@ -88,6 +98,7 @@ function HomePage({ currentUser, onLogout }) {
           <NotificationsSection
             currentUser={currentUser}
             onUserClick={handleSellerClick}  //  Reuse the same handler
+            {...notificationProps}
           />
         )}
       </main>
