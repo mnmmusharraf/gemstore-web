@@ -14,8 +14,10 @@ const usePublicProfile = (userId, currentUser) => {
   // Error state
   const [error, setError] = useState('');
 
-  // Derived states
-  const isOwnProfile = currentUser?.id === parseInt(userId);
+  // Derived states - safer comparison using String
+  const isOwnProfile = Boolean(
+    currentUser?.id && userId && String(currentUser.id) === String(userId)
+  );
 
   // Reuse follow hook
   const {
@@ -26,13 +28,13 @@ const usePublicProfile = (userId, currentUser) => {
     fetchFollowStatus,
     toggleFollow:  baseToggleFollow,
     error: followError,
-    clearError: clearFollowError,
+    clearError:  clearFollowError,
   } = useFollowStatus(userId, currentUser);
 
   // Clear error
   const clearError = useCallback(() => {
     setError('');
-    clearFollowError();
+    clearFollowError?. ();
   }, [clearFollowError]);
 
   // Fetch user profile
@@ -56,7 +58,7 @@ const usePublicProfile = (userId, currentUser) => {
     }
   }, [userId, isOwnProfile]);
 
-  // Fetch user's listings
+  // Fetch user's listings - FIXED URL (removed space before query params)
   const fetchListings = useCallback(async () => {
     if (!userId || isOwnProfile) return;
 
@@ -68,7 +70,7 @@ const usePublicProfile = (userId, currentUser) => {
         { headers: getAuthHeaders() }
       );
       const data = await handleResponse(response);
-      setListings(data. data?.content || []);
+      setListings(data.data?. content || []);
     } catch (err) {
       console.error('Failed to fetch listings:', err);
       setListings([]);
@@ -79,17 +81,17 @@ const usePublicProfile = (userId, currentUser) => {
 
   // Toggle follow with profile update
   const toggleFollow = useCallback(async () => {
+    const wasFollowing = followStatus === 'ACTIVE';
     const success = await baseToggleFollow();
 
     if (success) {
       // Update follower count locally
       setProfile((prev) => {
         if (! prev) return prev;
-        const wasFollowing = followStatus === 'ACTIVE';
         return {
           ...prev,
           followersCount: wasFollowing
-            ? Math.max(0, (prev. followersCount || 1) - 1)
+            ? Math.max(0, (prev.followersCount || 1) - 1)
             : (prev.followersCount || 0) + 1,
         };
       });
@@ -102,7 +104,7 @@ const usePublicProfile = (userId, currentUser) => {
   const refresh = useCallback(() => {
     fetchProfile();
     fetchListings();
-    fetchFollowStatus();
+    fetchFollowStatus?. ();
   }, [fetchProfile, fetchListings, fetchFollowStatus]);
 
   // Initial data fetch
@@ -110,9 +112,9 @@ const usePublicProfile = (userId, currentUser) => {
     if (userId && !isOwnProfile) {
       fetchProfile();
       fetchListings();
-      fetchFollowStatus();
+      // fetchFollowStatus is called automatically by useFollowStatus on mount
     }
-  }, [userId, isOwnProfile, fetchProfile, fetchListings, fetchFollowStatus]);
+  }, [userId, isOwnProfile, fetchProfile, fetchListings]);
 
   return {
     // Data

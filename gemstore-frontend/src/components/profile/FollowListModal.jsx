@@ -3,11 +3,11 @@ import { API_BASE_URL, getAuthHeaders, handleResponse } from '../../api/config';
 import LoadingSpinner from '../common/LoadingSpinner';
 import './FollowListModal.css';
 
-const FollowListModal = ({ 
-  type, 
-  userId, 
-  onClose, 
-  onUserClick, 
+const FollowListModal = ({
+  type,
+  userId,
+  onClose,
+  onUserClick,
   currentUserId 
 }) => {
   const [users, setUsers] = useState([]);
@@ -35,10 +35,10 @@ const FollowListModal = ({
       });
 
       const result = await handleResponse(response);
-      
+
       // Handle different response structures
       let userList = result.data?. content || result.data || result || [];
-      
+
       // Ensure it's an array
       if (!Array.isArray(userList)) {
         userList = [];
@@ -58,11 +58,11 @@ const FollowListModal = ({
       // Fetch follow status for each user (to show follow/following button)
       if (currentUserId && userList.length > 0) {
         const statuses = {};
-        
+
         await Promise.allSettled(
           userList.slice(0, 50).map(async (u) => {
             if (u.id === currentUserId) return;
-            
+
             try {
               const res = await fetch(
                 `${API_BASE_URL}/api/v1/users/${u.id}/follow/status`,
@@ -75,7 +75,7 @@ const FollowListModal = ({
             }
           })
         );
-        
+
         setFollowStatus(statuses);
       }
     } catch (err) {
@@ -110,7 +110,7 @@ const FollowListModal = ({
         }
       );
       const result = await handleResponse(response);
-      
+
       const isFollowing = Boolean(result.data?. isFollowing);
       const isPending = Boolean(result.data?.isPending);
 
@@ -150,7 +150,7 @@ const FollowListModal = ({
           headers:  getAuthHeaders(),
         }
       );
-      
+
       // Remove from list
       setUsers((prev) => prev.filter((u) => u.id !== followerId));
     } catch (err) {
@@ -166,9 +166,9 @@ const FollowListModal = ({
 
   const getButtonContent = (uid) => {
     if (busy[uid]) return <span className="btn-spinner-small" />;
-    
+
     const status = followStatus[uid] || 'NONE';
-    
+
     if (status === 'ACTIVE') return 'Following';
     if (status === 'PENDING') return 'Requested';
     return 'Follow';
@@ -176,7 +176,7 @@ const FollowListModal = ({
 
   const getButtonClass = (uid) => {
     const status = followStatus[uid] || 'NONE';
-    
+
     if (status === 'ACTIVE') return 'modal-follow-btn following';
     if (status === 'PENDING') return 'modal-follow-btn pending';
     return 'modal-follow-btn';
@@ -201,8 +201,8 @@ const FollowListModal = ({
         {/* Header */}
         <header className="follow-modal-header">
           <div className="follow-modal-title">{title}</div>
-          <button 
-            className="follow-modal-close" 
+          <button
+            className="follow-modal-close"
             onClick={onClose}
             aria-label="Close"
           >
@@ -231,7 +231,7 @@ const FollowListModal = ({
                   <div className="empty-icon">👥</div>
                   <div className="empty-title">No followers yet</div>
                   <div className="empty-text">
-                    When people follow you, you'll see them here. 
+                    When people follow you, you'll see them here.
                   </div>
                 </>
               ) : (
@@ -249,7 +249,7 @@ const FollowListModal = ({
               {users.map((user) => (
                 <div key={user. id} className="follow-modal-item">
                   {/* User Info */}
-                  <div 
+                  <div
                     className="follow-modal-user"
                     onClick={() => handleUserClick(user.id)}
                   >
@@ -280,7 +280,7 @@ const FollowListModal = ({
                       >
                         {getButtonContent(user.id)}
                       </button>
-                      
+
                       {/* Show Remove button only for own profile's followers */}
                       {isFollowers && userId === currentUserId && (
                         <button
@@ -293,7 +293,7 @@ const FollowListModal = ({
                       )}
                     </div>
                   )}
-                  
+
                   {/* Show "You" badge for current user */}
                   {user.id === currentUserId && (
                     <div className="follow-modal-you">You</div>

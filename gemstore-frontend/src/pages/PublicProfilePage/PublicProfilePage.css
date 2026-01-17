@@ -22,7 +22,7 @@
 .public-profile-avatar {
   width: 150px;
   height: 150px;
-  border-radius:  50%;
+  border-radius: 50%;
   overflow: hidden;
   flex-shrink: 0;
   background: var(--bg-subtle);
@@ -58,12 +58,12 @@
   display: flex;
   align-items: center;
   gap: 20px;
-  margin-bottom:  20px;
+  margin-bottom: 20px;
 }
 
 .public-profile-username {
   font-size: 1.75rem;
-  font-weight:  400;
+  font-weight: 400;
   margin:  0;
   color: var(--text-main);
 }
@@ -73,7 +73,7 @@
   padding: 8px 24px;
   border-radius: 8px;
   font-size:  0.9rem;
-  font-weight:  600;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
   border: none;
@@ -117,7 +117,7 @@
 /* ================= BACK BUTTON ================= */
 .public-profile-back-btn {
   padding: 8px 16px;
-  border-radius:  8px;
+  border-radius: 8px;
   font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
@@ -131,18 +131,18 @@
   background: var(--sidebar-hover-bg);
 }
 
-/* ================= STATS (Only listings & followers) ================= */
+/* ================= STATS ================= */
 .public-profile-stats {
   display: flex;
   gap: 40px;
-  margin-bottom:  20px;
+  margin-bottom: 20px;
   font-size: 1rem;
   color: var(--text-main);
 }
 
 .public-profile-stat {
   display: flex;
-  gap: 0. 35rem;
+  gap: 0.35rem; /* FIXED:  removed space */
   align-items:  center;
 }
 
@@ -152,7 +152,7 @@
 }
 
 .public-profile-stat span {
-  color: var(--text-main);
+  color:  var(--text-main);
 }
 
 /* ================= BIO ================= */
@@ -167,7 +167,7 @@
 
 .public-profile-bio p {
   margin: 4px 0;
-  color:  var(--text-muted);
+  color: var(--text-muted);
 }
 
 .public-profile-website {
@@ -176,9 +176,16 @@
   font-weight: 600;
 }
 
+/* Dark mode website link */
+@media (prefers-color-scheme: dark) {
+  .public-profile-website {
+    color: #58a6ff;
+  }
+}
+
 /* ================= TABS ================= */
 .public-profile-tabs {
-  display:  flex;
+  display: flex;
   justify-content: center;
   border-top: 1px solid var(--border-soft);
 }
@@ -194,7 +201,7 @@
   border-top: 2px solid transparent;
   color: var(--text-muted);
   font-size: 0.8rem;
-  font-weight: 600;
+  font-weight:  600;
   text-transform: uppercase;
   letter-spacing: 1px;
   cursor: pointer;
@@ -262,7 +269,7 @@
 
 /* ================= BADGE ================= */
 .public-profile-badge {
-  position:  absolute;
+  position: absolute;
   top: 8px;
   left: 8px;
   padding: 4px 8px;
@@ -274,20 +281,20 @@
 
 .public-profile-badge.sold {
   background: #e74c3c;
-  color: white;
+  color:  white;
 }
 
 /* ================= EMPTY STATE ================= */
 .public-profile-empty {
   grid-column: 1 / -1;
-  text-align: center;
+  text-align:  center;
   padding: 60px 20px;
   color: var(--text-muted);
 }
 
 .public-profile-empty-icon {
-  font-size: 3rem;
-  margin-bottom:  16px;
+  font-size:  3rem;
+  margin-bottom: 16px;
 }
 
 .public-profile-empty span {
@@ -302,7 +309,7 @@
   aspect-ratio: 1 / 1;
   background: linear-gradient(90deg, var(--bg-subtle) 25%, var(--border-soft) 50%, var(--bg-subtle) 75%);
   background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
+  animation: shimmer 1. 5s infinite;
 }
 
 @keyframes shimmer {
@@ -323,7 +330,7 @@
 
 .public-profile-error button {
   padding: 10px 24px;
-  border-radius:  8px;
+  border-radius: 8px;
   border: 1px solid var(--border-soft);
   background: var(--bg);
   color: var(--text-main);
@@ -344,7 +351,7 @@
   }
 
   .public-profile-username-row {
-    flex-direction:  column;
+    flex-direction: column;
     gap: 12px;
   }
 
@@ -368,7 +375,7 @@
   }
 
   .public-profile-stat span {
-    font-size: 0.85rem;
+    font-size:  0.85rem;
     color: var(--text-muted);
   }
 
