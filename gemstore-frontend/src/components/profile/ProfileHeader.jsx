@@ -8,34 +8,31 @@ const ProfileHeader = ({
   onBack,
   onAvatarChange,
   onAvatarRemove,
+  onFollowersClick,
+  onFollowingClick,
 }) => {
   const handleAvatarChange = () => {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
-
     input.onchange = (e) => {
       const file = e.target?. files?.[0];
       if (! file) return;
-
       if (! file.type.startsWith('image/')) {
         alert('Please select an image file');
         return;
       }
-
       if (file.size > 5 * 1024 * 1024) {
         alert('Image size must be less than 5MB');
         return;
       }
-
       onAvatarChange(file);
     };
-
     input.click();
   };
 
   const handleAvatarRemove = () => {
-    if (window.confirm('Are you sure you want to remove your profile photo?')) {
+    if (window.confirm('Are you sure you want to remove your profile photo? ')) {
       onAvatarRemove();
     }
   };
@@ -56,6 +53,7 @@ const ProfileHeader = ({
             </span>
           )}
         </div>
+
         <div className="profile-avatar-actions">
           <button
             type="button"
@@ -63,7 +61,7 @@ const ProfileHeader = ({
             onClick={handleAvatarChange}
             disabled={saving}
           >
-            {saving ? 'Uploading...' : 'Change photo'}
+            {saving ?  'Uploading...' : 'Change photo'}
           </button>
           {profile.avatarUrl && (
             <button
@@ -81,13 +79,11 @@ const ProfileHeader = ({
       <div className="profile-header-info">
         <div className="profile-username-row">
           <span className="profile-username">
-            {profile.username || 'username'}
+            {profile. username || 'username'}
           </span>
-
           {profile.privateProfile && (
             <span className="profile-private-badge">🔒 Private</span>
           )}
-
           {mode === 'view' && (
             <button
               type="button"
@@ -97,7 +93,6 @@ const ProfileHeader = ({
               Edit profile
             </button>
           )}
-
           {onBack && (
             <button
               type="button"
@@ -109,10 +104,28 @@ const ProfileHeader = ({
           )}
         </div>
 
+        {/* Stats Row - Instagram Style */}
         <div className="profile-stats">
-          <span><strong>{profile.postsCount}</strong> posts</span>
-          <span><strong>{profile.followersCount}</strong> followers</span>
-          <span><strong>{profile.followingCount}</strong> following</span>
+          <div className="profile-stat">
+            <strong>{profile.postsCount || 0}</strong>
+            <span>posts</span>
+          </div>
+          
+          <div 
+            className="profile-stat profile-stat-clickable"
+            onClick={onFollowersClick}
+          >
+            <strong>{profile.followersCount || 0}</strong>
+            <span>followers</span>
+          </div>
+          
+          <div 
+            className="profile-stat profile-stat-clickable"
+            onClick={onFollowingClick}
+          >
+            <strong>{profile. followingCount || 0}</strong>
+            <span>following</span>
+          </div>
         </div>
 
         <div className="profile-name-and-bio">
@@ -123,11 +136,11 @@ const ProfileHeader = ({
           {profile.website && (
             <a
               className="profile-website"
-              href={profile.website. startsWith('http') ? profile.website : `https://${profile.website}`}
+              href={profile.website.startsWith('http') ? profile.website : `https://${profile.website}`}
               target="_blank"
               rel="noreferrer"
             >
-              {profile.website. replace(/^https?:\/\//, '')}
+              {profile. website.replace(/^https?:\/\//, '')}
             </a>
           )}
         </div>

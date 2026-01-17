@@ -1,0 +1,354 @@
+@import '../../styles/theme.css';
+
+.follow-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.follow-modal {
+  background: var(--bg);
+  border-radius: 12px;
+  width: 400px;
+  max-width: 90vw;
+  max-height: 400px;
+  display: flex;
+  flex-direction: column;
+  overflow:  hidden;
+  animation: slideUp 0.2s ease;
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Header */
+.follow-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.follow-modal-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.follow-modal-close {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform:  translateY(-50%);
+  background: none;
+  border:  none;
+  padding: 8px;
+  cursor: pointer;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition:  background 0.2s;
+}
+
+.follow-modal-close:hover {
+  background: var(--bg-subtle);
+}
+
+/* Content */
+.follow-modal-content {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior:  contain;
+}
+
+/* Loading */
+.follow-modal-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
+/* List */
+.follow-modal-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.follow-modal-item {
+  display: flex;
+  align-items:  center;
+  padding: 8px 16px;
+  gap: 12px;
+}
+
+.follow-modal-item:hover {
+  background: var(--bg-subtle);
+}
+
+/* User */
+.follow-modal-user {
+  display: flex;
+  align-items:  center;
+  gap: 12px;
+  flex:  1;
+  min-width: 0;
+  cursor: pointer;
+}
+
+/* Avatar */
+.follow-modal-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--bg-subtle);
+}
+
+.follow-modal-avatar img {
+  width:  100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.follow-modal-avatar .avatar-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  font-weight: 600;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+/* Info */
+.follow-modal-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.follow-modal-username {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-main);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.follow-modal-name {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Actions */
+.follow-modal-actions {
+  display: flex;
+  gap:  8px;
+  flex-shrink: 0;
+}
+
+/* Follow Button */
+.modal-follow-btn {
+  padding: 7px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor:  pointer;
+  transition: all 0.2s;
+  background: var(--primary);
+  color: white;
+  min-width: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-follow-btn:hover:not(:disabled) {
+  background: var(--primary-hover);
+}
+
+.modal-follow-btn.following {
+  background:  var(--bg-subtle);
+  color: var(--text-main);
+  border:  1px solid var(--border-soft);
+}
+
+.modal-follow-btn.following:hover:not(:disabled) {
+  background: #fee2e2;
+  color: #dc2626;
+  border-color: #fca5a5;
+}
+
+.modal-follow-btn.pending {
+  background: var(--bg-subtle);
+  color: var(--text-muted);
+  border:  1px solid var(--border-soft);
+}
+
+.modal-follow-btn:disabled {
+  opacity: 0.6;
+  cursor:  not-allowed;
+}
+
+/* Remove Button */
+.modal-remove-btn {
+  padding: 7px 12px;
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor:  pointer;
+  background: var(--bg);
+  color: var(--text-main);
+  transition: all 0.2s;
+}
+
+.modal-remove-btn:hover:not(:disabled) {
+  background: #fee2e2;
+  color: #dc2626;
+  border-color: #fca5a5;
+}
+
+.modal-remove-btn:disabled {
+  opacity: 0.6;
+  cursor:  not-allowed;
+}
+
+/* You badge */
+.follow-modal-you {
+  padding: 4px 10px;
+  background: var(--bg-subtle);
+  color: var(--text-muted);
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight:  500;
+}
+
+/* Spinner */
+.btn-spinner-small {
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-top-color:  transparent;
+  border-radius: 50%;
+  animation:  spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Empty State */
+.follow-modal-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.follow-modal-empty .empty-icon {
+  font-size: 2. 5rem;
+  margin-bottom: 12px;
+}
+
+.follow-modal-empty .empty-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 4px;
+}
+
+.follow-modal-empty .empty-text {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+/* Error State */
+.follow-modal-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 20px;
+  gap: 12px;
+  text-align: center;
+}
+
+.follow-modal-error p {
+  color: var(--text-muted);
+  margin:  0;
+}
+
+.follow-modal-error button {
+  padding:  8px 20px;
+  border: none;
+  border-radius: 8px;
+  background: var(--primary);
+  color: white;
+  font-weight: 600;
+  cursor:  pointer;
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .follow-modal {
+    width: 100%;
+    max-width:  100%;
+    max-height: 80vh;
+    border-radius: 12px 12px 0 0;
+    position: fixed;
+    bottom: 0;
+  }
+
+  .follow-modal-item {
+    padding: 10px 16px;
+  }
+
+  .follow-modal-avatar {
+    width:  40px;
+    height: 40px;
+  }
+
+  .modal-follow-btn {
+    padding: 6px 14px;
+    font-size: 0.8rem;
+    min-width: 70px;
+  }
+
+  .modal-remove-btn {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+  }
+}

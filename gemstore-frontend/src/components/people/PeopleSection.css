@@ -1,0 +1,307 @@
+@import '../../styles/theme.css';
+
+.people-root {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Header */
+.people-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.people-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight:  600;
+  color: var(--text-main);
+}
+
+.people-header p {
+  margin: 6px 0 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+/* Tabs */
+.people-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-soft);
+  overflow-x: auto;
+}
+
+.people-tab {
+  display: flex;
+  align-items: center;
+  gap:  6px;
+  padding: 8px 16px;
+  border:  none;
+  background:  var(--bg-subtle);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 500;
+  border-radius: 20px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:  all 0.2s;
+}
+
+.people-tab:hover {
+  background: var(--border-soft);
+}
+
+.people-tab.active {
+  background: var(--text-main);
+  color: var(--bg);
+}
+
+.people-tab-count {
+  background: var(--primary);
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding:  2px 6px;
+  border-radius: 10px;
+  min-width: 18px;
+  text-align: center;
+}
+
+.people-tab.active .people-tab-count {
+  background: var(--bg);
+  color: var(--text-main);
+}
+
+/* List */
+.people-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.people-row {
+  display:  flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-soft);
+  transition: background 0.2s;
+}
+
+.people-row:hover {
+  background: var(--bg-subtle);
+}
+
+/* User Button */
+.people-user {
+  display: flex;
+  align-items: center;
+  gap:  12px;
+  border:  0;
+  background:  transparent;
+  cursor: pointer;
+  padding: 0;
+  flex:  1;
+  text-align: left;
+  min-width: 0;
+}
+
+/* Avatar */
+.people-avatar {
+  width: 48px;
+  height:  48px;
+  border-radius:  50%;
+  overflow: hidden;
+  background: var(--bg-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.people-avatar img {
+  width:  100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.people-avatar-fallback {
+  font-size: 1.2rem;
+  font-weight:  600;
+  color: white;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  width: 100%;
+  height: 100%;
+  display:  flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* User Info */
+.people-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 2px;
+}
+
+.people-username {
+  font-weight:  600;
+  color: var(--text-main);
+  font-size: 0.95rem;
+}
+
+.people-name {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.people-bio {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 200px;
+}
+
+/* Follow Button */
+.people-follow-btn {
+  padding: 8px 16px;
+  border: 1px solid var(--primary);
+  background: var(--primary);
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: all 0.2s;
+  min-width: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.people-follow-btn:hover:not(:disabled) {
+  background: var(--primary-hover);
+  border-color: var(--primary-hover);
+}
+
+.people-follow-btn.following {
+  background:  var(--bg);
+  color: var(--text-main);
+  border-color: var(--border-soft);
+}
+
+.people-follow-btn.following:hover:not(:disabled) {
+  background: #ffebee;
+  color: #e74c3c;
+  border-color: #e74c3c;
+}
+
+.people-follow-btn.pending {
+  background: var(--bg-subtle);
+  color: var(--text-muted);
+  border-color:  var(--border-soft);
+}
+
+.people-follow-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Button Spinner */
+.btn-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid currentColor;
+  border-top-color:  transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* Empty State */
+.people-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding:  60px 20px;
+  text-align: center;
+}
+
+.people-empty-icon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+}
+
+.people-empty h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin:  0 0 8px 0;
+}
+
+.people-empty p {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* Loading State */
+.people-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding:  60px 20px;
+  gap: 16px;
+  color: var(--text-muted);
+}
+
+.people-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border-soft);
+  border-top-color: var(--primary);
+  border-radius:  50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .people-header {
+    padding: 12px 16px;
+  }
+
+  .people-header h2 {
+    font-size:  1.25rem;
+  }
+
+  .people-row {
+    padding: 10px 12px;
+  }
+
+  .people-avatar {
+    width:  42px;
+    height: 42px;
+  }
+
+  .people-follow-btn {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    min-width: 80px;
+  }
+
+  .people-bio {
+    display: none;
+  }
+}

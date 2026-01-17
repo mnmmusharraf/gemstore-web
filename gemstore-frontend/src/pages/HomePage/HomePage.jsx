@@ -11,10 +11,11 @@ import PriceEstimatorForm from "../../components/estimator/PriceEstimatorForm";
 import ProfilePage from "../ProfilePage/ProfilePage";
 import PublicProfilePage from "../PublicProfilePage/PublicProfilePage";
 import NotificationsSection from "../../components/notifications/NotificationsSection";
+import PeopleSection from "../../components/people/PeopleSection";
 
 function HomePage({ currentUser, onLogout }) {
   const [activeTab, setActiveTab] = useState("feed");
-  const [viewingUserId, setViewingUserId] = useState(null);  //  Track which user's profile to view
+  const [viewingUserId, setViewingUserId] = useState(null);
   const [notificationApi, setNotificationApi] = useState(null);
 
   const notificationProps = useMemo(() => {
@@ -28,7 +29,7 @@ function HomePage({ currentUser, onLogout }) {
   // Handle clicking on a seller in the feed
   const handleSellerClick = (sellerId) => {
     // Check if clicking on own profile
-    if (sellerId === currentUser?. id) {
+    if (sellerId === currentUser?.id) {
       setActiveTab("profile");
       setViewingUserId(null);
     } else {
@@ -55,7 +56,7 @@ function HomePage({ currentUser, onLogout }) {
         activeTab={activeTab}
         onChangeTab={(tab, api) => {
           setActiveTab(tab);
-          setViewingUserId(null);  // Reset when changing tabs via sidebar
+          setViewingUserId(null);
           if (api) setNotificationApi(api);
         }}
         currentUser={currentUser}
@@ -68,14 +69,21 @@ function HomePage({ currentUser, onLogout }) {
         )}
 
         {activeTab === "feed" && (
-          <FeedSection 
-            onSellerClick={handleSellerClick}  //  Pass the handler
-          />
+          <FeedSection onSellerClick={handleSellerClick} />
         )}
         
         {activeTab === "sell" && <SellFormSection />}
+        
         {activeTab === "messages" && <MessagesSection />}
+        
         {activeTab === "report" && <ReportSection />}
+        
+        {activeTab === "people" && (
+          <PeopleSection
+            currentUser={currentUser}
+            onUserClick={handleSellerClick}
+          />
+        )}
 
         {activeTab === "profile" && (
           <ProfilePage
@@ -84,20 +92,22 @@ function HomePage({ currentUser, onLogout }) {
             onProfileUpdate={(updatedUser) => {
               console.log("Profile updated:", updatedUser);
             }}
+            onUserClick={handleSellerClick}  // ✅ ADDED THIS
           />
         )}
 
         {activeTab === "publicProfile" && viewingUserId && (
           <PublicProfilePage
             currentUser={currentUser}
-            userId={viewingUserId}  
-            onBack={handleBackFromPublicProfile}  
+            userId={viewingUserId}
+            onBack={handleBackFromPublicProfile}
           />
         )}
+
         {activeTab === "notifications" && (
           <NotificationsSection
             currentUser={currentUser}
-            onUserClick={handleSellerClick}  //  Reuse the same handler
+            onUserClick={handleSellerClick}
             {...notificationProps}
           />
         )}

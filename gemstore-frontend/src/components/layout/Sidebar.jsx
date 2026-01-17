@@ -5,6 +5,7 @@ import {
   FiSend,
   FiCompass,
   FiUser,
+  FiUsers,
   FiBell,
   FiLogOut,
 } from "react-icons/fi";
@@ -22,6 +23,7 @@ const navItems = [
   { key: "notifications", icon: FiBell, label: "Notifications" },
   { key: "messages", icon: FiSend, label: "Messages" },
   { key: "report", icon: FiCompass, label: "Report" },
+  { key: "people", icon: FiUsers, label: "People" },
   { key: "profile", icon: FiUser, label: "Profile" },
 ];
 
@@ -29,13 +31,13 @@ function Sidebar({ activeTab, onChangeTab, currentUser, onLogout }) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [requestsCount, setRequestsCount] = useState(0);
 
-  // ✅ store callback safely
+  //  store callback safely
   const onNewNotificationRef = useRef(null);
 
-  // ✅ only used when image fails (to switch to fallback)
+  //  only used when image fails (to switch to fallback)
   const [avatarBroken, setAvatarBroken] = useState(false);
 
-  // ✅ changes when user/avatar changes (no effect needed)
+  //  changes when user/avatar changes (no effect needed)
   const avatarKey = useMemo(() => {
     const id = currentUser?.id ?? "no-user";
     const url = currentUser?.avatarUrl ?? "no-avatar";
