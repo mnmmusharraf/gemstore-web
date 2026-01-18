@@ -123,7 +123,7 @@ const ProfileHeader = ({
             className="profile-stat profile-stat-clickable"
             onClick={onFollowingClick}
           >
-            <strong>{profile. followingCount || 0}</strong>
+            <strong>{profile.followingCount || 0}</strong>
             <span>following</span>
           </div>
         </div>

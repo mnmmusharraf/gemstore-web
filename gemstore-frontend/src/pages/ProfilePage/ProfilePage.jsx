@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useProfile from '../../hooks/useProfile';
 import ProfileHeader from '../../components/profile/ProfileHeader';
@@ -11,7 +11,7 @@ import './ProfilePage.css';
 
 const ProfilePage = ({ currentUser, onBack, onProfileUpdate, onUserClick }) => {
   const [mode, setMode] = useState('view');
-  const [followModal, setFollowModal] = useState(null); // 'followers' | 'following' | null
+  const [followModal, setFollowModal] = useState(null);
   const navigate = useNavigate();
 
   const {
@@ -28,6 +28,7 @@ const ProfilePage = ({ currentUser, onBack, onProfileUpdate, onUserClick }) => {
     uploadAvatar,
     removeAvatar,
     fetchFavorites,
+    updateFollowCount,
     clearError,
     clearSuccess,
   } = useProfile(currentUser, onProfileUpdate);
@@ -40,16 +41,24 @@ const ProfilePage = ({ currentUser, onBack, onProfileUpdate, onUserClick }) => {
     return ok;
   };
 
-  // ✅ FIXED: Changed from template literal to parentheses
   const handleListingClick = (listingId) => {
     navigate(`/listing/${listingId}`);
   };
 
   const handleUserClick = (userId) => {
-    setFollowModal(null); // Close modal
+    setFollowModal(null);
     if (onUserClick) {
       onUserClick(userId);
     }
+  };
+
+  // Handle count changes from modal
+  const handleCountChange = useCallback((type, count) => {
+    updateFollowCount(type, count);
+  }, [updateFollowCount]);
+
+  const handleModalClose = () => {
+    setFollowModal(null);
   };
 
   if (loading) {
@@ -99,14 +108,14 @@ const ProfilePage = ({ currentUser, onBack, onProfileUpdate, onUserClick }) => {
         )}
       </section>
 
-      {/* Followers/Following Modal */}
       {followModal && (
         <FollowListModal
           type={followModal}
           userId={currentUser?.id}
-          onClose={() => setFollowModal(null)}
+          currentUserId={currentUser?. id}
+          onClose={handleModalClose}
           onUserClick={handleUserClick}
-          currentUserId={currentUser?.id}
+          onCountChange={handleCountChange}
         />
       )}
     </div>

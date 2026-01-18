@@ -171,7 +171,7 @@ const ProfileHeaderSection = ({
         {/* Bio */}
         <div className="public-profile-bio">
           <div className="public-profile-display-name">
-            {profile?. displayName || profile?.username}
+            {profile?.displayName || profile?.username}
           </div>
           {profile?.bio && <p>{profile.bio}</p>}
           {profile?.website && (
