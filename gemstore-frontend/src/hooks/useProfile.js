@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getMyListings, getMyFavorites } from '../api/profileService';
-import { 
-  API_BASE_URL, 
-  getAuthHeaders, 
-  getAuthHeaderOnly, 
-  handleResponse 
+import {
+  API_BASE_URL,
+  getAuthHeaders,
+  getAuthHeaderOnly,
+  handleResponse
 } from '../api/config';
 
 const useProfile = (currentUser, onProfileUpdate) => {
@@ -13,8 +13,8 @@ const useProfile = (currentUser, onProfileUpdate) => {
     username: '',
     email: '',
     bio: '',
-    website:  '',
-    avatarUrl: '',
+    website: '',
+    avatarUrl:  '',
     privateProfile: false,
     postsCount: 0,
     followersCount: 0,
@@ -35,19 +35,80 @@ const useProfile = (currentUser, onProfileUpdate) => {
     if (currentUser) {
       setProfile({
         displayName: currentUser. displayName || '',
-        username:  currentUser.username || '',
+        username: currentUser. username || '',
         email: currentUser.email || '',
         bio: currentUser.bio || '',
         website: currentUser.website || '',
         avatarUrl: currentUser.avatarUrl || '',
         privateProfile: currentUser.privateProfile || false,
-        postsCount: currentUser. postsCount || 0,
-        followersCount: currentUser. followersCount || 0,
-        followingCount: currentUser. followingCount || 0,
+        postsCount: currentUser.postsCount || 0,
+        followersCount: currentUser.followersCount || 0,
+        followingCount: currentUser.followingCount || 0,
       });
       setLoading(false);
     }
   }, [currentUser]);
+
+  // ==================== FETCH ACTUAL COUNTS ====================
+  const fetchFollowCounts = useCallback(async () => {
+    if (!currentUser?. id) return;
+
+    try {
+      // Fetch followers
+      const followersRes = await fetch(
+        `${API_BASE_URL}/api/v1/users/${currentUser.id}/followers?page=0&size=1`,
+        { headers: getAuthHeaders() }
+      );
+      const followersData = await handleResponse(followersRes);
+
+      // Fetch following
+      const followingRes = await fetch(
+        `${API_BASE_URL}/api/v1/users/${currentUser.id}/following?page=0&size=1`,
+        { headers: getAuthHeaders() }
+      );
+      const followingData = await handleResponse(followingRes);
+
+      // Extract counts from response
+      const followersCount = followersData.data?.totalElements ??
+                             followersData.totalElements ??  0;
+      const followingCount = followingData.data?. totalElements ??
+                             followingData.totalElements ?? 0;
+
+      setProfile((prev) => ({
+        ...prev,
+        followersCount,
+        followingCount,
+      }));
+    } catch (err) {
+      console.error('Failed to fetch follow counts:', err);
+    }
+  }, [currentUser?.id]);
+
+  // Fetch counts on mount
+  useEffect(() => {
+    if (currentUser?.id) {
+      fetchFollowCounts();
+    }
+  }, [currentUser?.id, fetchFollowCounts]);
+
+  // ==================== REFETCH PROFILE ====================
+  const refetchProfile = useCallback(async () => {
+    if (!currentUser?.id) return;
+
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/users/${currentUser.id}`,
+        { headers: getAuthHeaders() }
+      );
+      const data = await handleResponse(response);
+      setProfile(data);
+
+      // Also refetch counts
+      await fetchFollowCounts();
+    } catch (err) {
+      console.error('Failed to refetch profile:', err);
+    }
+  }, [currentUser?.id, fetchFollowCounts]);
 
   // ==================== FETCH LISTINGS ====================
   const fetchListings = useCallback(async (page = 0) => {
@@ -55,11 +116,10 @@ const useProfile = (currentUser, onProfileUpdate) => {
     try {
       const response = await getMyListings(null, page, 20);
       if (response.success) {
-        setListings(response.data?.content || []);
-        // Update posts count
+        setListings(response.data?. content || []);
         setProfile((prev) => ({
           ...prev,
-          postsCount: response.data?. totalElements || 0,
+          postsCount: response.data?.totalElements || 0,
         }));
       }
     } catch (err) {
@@ -88,7 +148,7 @@ const useProfile = (currentUser, onProfileUpdate) => {
 
   // Load listings on mount
   useEffect(() => {
-    if (currentUser?. id) {
+    if (currentUser?.id) {
       fetchListings();
     }
   }, [currentUser?.id, fetchListings]);
@@ -111,7 +171,6 @@ const useProfile = (currentUser, onProfileUpdate) => {
 
       const data = await handleResponse(response);
 
-      // Update local profile state
       setProfile((prev) => ({
         ...prev,
         displayName: data. displayName || prev.displayName,
@@ -120,7 +179,6 @@ const useProfile = (currentUser, onProfileUpdate) => {
         privateProfile: data.privateProfile || false,
       }));
 
-      // Notify parent component
       if (onProfileUpdate) {
         onProfileUpdate(data);
       }
@@ -146,21 +204,19 @@ const useProfile = (currentUser, onProfileUpdate) => {
 
       const response = await fetch(`${API_BASE_URL}/api/users/me/avatar`, {
         method: 'POST',
-        headers: getAuthHeaderOnly(), // No Content-Type for FormData
+        headers: getAuthHeaderOnly(),
         body: formData,
       });
 
       const data = await handleResponse(response);
 
-      // Update local profile state
       setProfile((prev) => ({
         ...prev,
         avatarUrl: data.avatarUrl,
       }));
 
-      // Notify parent component
       if (onProfileUpdate) {
-        onProfileUpdate({ ... profile, avatarUrl: data.avatarUrl });
+        onProfileUpdate({ ...profile, avatarUrl: data.avatarUrl });
       }
 
       setSuccess('Profile photo updated');
@@ -188,13 +244,11 @@ const useProfile = (currentUser, onProfileUpdate) => {
         throw new Error('Failed to remove photo');
       }
 
-      // Update local profile state
       setProfile((prev) => ({
         ...prev,
-        avatarUrl: '',
+        avatarUrl:  '',
       }));
 
-      // Notify parent component
       if (onProfileUpdate) {
         onProfileUpdate({ ...profile, avatarUrl: '' });
       }
@@ -209,6 +263,14 @@ const useProfile = (currentUser, onProfileUpdate) => {
       setSaving(false);
     }
   };
+
+  // ==================== UPDATE COUNTS (for modal callbacks) ====================
+  const updateFollowCount = useCallback((type, count) => {
+    setProfile((prev) => ({
+      ...prev,
+      [`${type}Count`]: count,
+    }));
+  }, []);
 
   // ==================== HELPERS ====================
   const clearError = () => setError('');
@@ -229,8 +291,11 @@ const useProfile = (currentUser, onProfileUpdate) => {
     removeAvatar,
     fetchListings,
     fetchFavorites,
+    fetchFollowCounts,
+    updateFollowCount,
     clearError,
     clearSuccess,
+    refetchProfile,
   };
 };
 

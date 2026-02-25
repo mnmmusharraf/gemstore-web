@@ -5,8 +5,10 @@ import {
   FiSend,
   FiCompass,
   FiUser,
+  FiUsers,
   FiBell,
   FiLogOut,
+  FiDollarSign,  // ✅ ADD THIS - for estimator icon
 } from "react-icons/fi";
 import { API_BASE_URL, getAuthHeaders } from "../../api/config";
 import "./Sidebar.css";
@@ -19,9 +21,11 @@ import "./SidebarFooter.css";
 const navItems = [
   { key: "feed", icon: FiHome, label: "Explore" },
   { key: "sell", icon: FiPlusSquare, label: "List Gemstone" },
+  { key: "estimator", icon: FiDollarSign, label: "Price Estimator" },  // ✅ ADD THIS
   { key: "notifications", icon: FiBell, label: "Notifications" },
   { key: "messages", icon: FiSend, label: "Messages" },
   { key: "report", icon: FiCompass, label: "Report" },
+  { key: "people", icon: FiUsers, label: "People" },
   { key: "profile", icon: FiUser, label: "Profile" },
 ];
 
@@ -29,13 +33,13 @@ function Sidebar({ activeTab, onChangeTab, currentUser, onLogout }) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [requestsCount, setRequestsCount] = useState(0);
 
-  // ✅ store callback safely
+  // store callback safely
   const onNewNotificationRef = useRef(null);
 
-  // ✅ only used when image fails (to switch to fallback)
+  // only used when image fails (to switch to fallback)
   const [avatarBroken, setAvatarBroken] = useState(false);
 
-  // ✅ changes when user/avatar changes (no effect needed)
+  // changes when user/avatar changes (no effect needed)
   const avatarKey = useMemo(() => {
     const id = currentUser?.id ?? "no-user";
     const url = currentUser?.avatarUrl ?? "no-avatar";
@@ -120,7 +124,8 @@ function Sidebar({ activeTab, onChangeTab, currentUser, onLogout }) {
             key={key}
             className={
               "sidebar-nav-item" +
-              (activeTab === key ? " sidebar-nav-item-active" : "")
+              (activeTab === key ? " sidebar-nav-item-active" : "") +
+              (key === "estimator" ? " sidebar-nav-item-highlight" : "")  // ✅ Optional highlight
             }
             onClick={() =>
               onChangeTab(key, {
@@ -137,6 +142,10 @@ function Sidebar({ activeTab, onChangeTab, currentUser, onLogout }) {
                 <span className="sidebar-badge">
                   {totalNotificationBadge > 99 ? "99+" : totalNotificationBadge}
                 </span>
+              )}
+              {/* ✅ Optional: Add "AI" badge for estimator */}
+              {key === "estimator" && (
+                <span className="sidebar-ai-badge">AI</span>
               )}
             </span>
             <span>{label}</span>
@@ -155,7 +164,6 @@ function Sidebar({ activeTab, onChangeTab, currentUser, onLogout }) {
               title="Open profile"
             >
               <div className="sidebar-avatar">
-                {/* key resets the <img> when user/avatar changes */}
                 {currentUser.avatarUrl && !avatarBroken ? (
                   <img
                     key={avatarKey}
