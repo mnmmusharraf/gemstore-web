@@ -1,42 +1,79 @@
 @import "../../styles/theme.css";
 
-.main-rightbar {
-  padding: 1.25rem 1rem;
+.rightbar {
+  width: 320px;
+  min-width: 320px;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  border-left: 1px solid var(--border-soft);
+  background: var(--bg);
   overflow-y: auto;
+  scrollbar-width: thin;
 }
 
-.right-card {
-  background: var(--bg-elevated);
-  border-radius: 14px;
-  border: 1px solid var(--border-soft);
-  padding: 1rem 0.9rem 1.1rem;
-  margin-bottom: 1rem;
-}
-
-.right-card-title {
-  font-size: 0.95rem;
-  font-weight: 600;
-  margin-bottom: 0.25rem;
-}
-
-.right-card-text {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  margin-bottom: 0.8rem;
-}
-
-.right-tags {
+.rightbar-content {
+  padding: 1rem;
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
-.right-tag {
-  border-radius: 999px;
-  border: 1px solid var(--tag-border);
-  background: var(--tag-bg);
+/* Rightbar Estimator Section */
+.rightbar-estimator {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-soft);
+  border-radius: 16px;
+  padding: 1rem;
+}
+
+.rightbar-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.rightbar-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
   color: var(--text-main);
-  font-size: 0.75rem;
-  padding: 0.3rem 0.7rem;
+  margin: 0;
+}
+
+.section-icon {
+  font-size: 1rem;
+}
+
+.expand-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text-muted);
+  font-size: 0.9rem;
   cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.expand-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: rgba(var(--primary-rgb), 0.05);
+}
+
+/* Hide rightbar on smaller screens */
+@media (max-width: 1200px) {
+  .rightbar {
+    display: none;
+  }
 }

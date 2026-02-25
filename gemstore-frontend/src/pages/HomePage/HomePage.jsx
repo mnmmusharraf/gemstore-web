@@ -28,7 +28,6 @@ function HomePage({ currentUser, onLogout }) {
 
   // Handle clicking on a seller in the feed
   const handleSellerClick = (sellerId) => {
-    // Check if clicking on own profile
     if (sellerId === currentUser?.id) {
       setActiveTab("profile");
       setViewingUserId(null);
@@ -44,11 +43,22 @@ function HomePage({ currentUser, onLogout }) {
     setViewingUserId(null);
   };
 
+  // Handle creating listing from price estimate
+  const handleCreateListingFromEstimate = (estimateData) => {
+    // Switch to sell tab with pre-filled data
+    setActiveTab("sell");
+    // You can pass the estimate data to SellFormSection via state or context
+    console.log("Create listing with estimate:", estimateData);
+  };
+
   const mainRootClass =
     "main-root" +
     (activeTab === "profile" || activeTab === "publicProfile"
       ? " main-root--profile"
       : "");
+
+  // Determine if we should show the rightbar with estimator
+  const showRightbar = !["profile", "publicProfile", "messages"].includes(activeTab);
 
   return (
     <div className={mainRootClass}>
@@ -71,13 +81,13 @@ function HomePage({ currentUser, onLogout }) {
         {activeTab === "feed" && (
           <FeedSection onSellerClick={handleSellerClick} />
         )}
-        
+
         {activeTab === "sell" && <SellFormSection />}
-        
+
         {activeTab === "messages" && <MessagesSection />}
-        
+
         {activeTab === "report" && <ReportSection />}
-        
+
         {activeTab === "people" && (
           <PeopleSection
             currentUser={currentUser}
@@ -92,7 +102,7 @@ function HomePage({ currentUser, onLogout }) {
             onProfileUpdate={(updatedUser) => {
               console.log("Profile updated:", updatedUser);
             }}
-            onUserClick={handleSellerClick}  // ✅ ADDED THIS
+            onUserClick={handleSellerClick}
           />
         )}
 
@@ -111,11 +121,52 @@ function HomePage({ currentUser, onLogout }) {
             {...notificationProps}
           />
         )}
+
+        {/* Estimator Tab - Full page view */}
+        {activeTab === "estimator" && (
+          <section className="estimator-page">
+            <div className="estimator-page-header">
+              <h1 className="estimator-page-title">
+                <span className="title-icon">💎</span>
+                AI Price Estimator
+              </h1>
+              <p className="estimator-page-subtitle">
+                Get instant, AI-powered price estimates for your precious gemstones
+              </p>
+            </div>
+            <div className="estimator-page-content">
+              <PriceEstimatorForm 
+                onCreateListing={handleCreateListingFromEstimate}
+                fullPage={true}
+              />
+            </div>
+          </section>
+        )}
       </main>
 
-      {activeTab !== "profile" && activeTab !== "publicProfile" && (
+      {/* Rightbar with Price Estimator Widget */}
+      {showRightbar && (
         <Rightbar>
-          <PriceEstimatorForm />
+          {/* Estimator Widget in Sidebar */}
+          <div className="rightbar-estimator">
+            <div className="rightbar-section-header">
+              <h3 className="rightbar-section-title">
+                <span className="section-icon">✨</span>
+                Quick Price Estimate
+              </h3>
+              <button 
+                className="expand-btn"
+                onClick={() => setActiveTab("estimator")}
+                title="Open full estimator"
+              >
+                ↗
+              </button>
+            </div>
+            <PriceEstimatorForm 
+              compact={true}
+              onCreateListing={handleCreateListingFromEstimate}
+            />
+          </div>
         </Rightbar>
       )}
     </div>
