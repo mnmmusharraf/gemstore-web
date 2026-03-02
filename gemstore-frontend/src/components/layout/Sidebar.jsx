@@ -8,7 +8,7 @@ import {
   FiUsers,
   FiBell,
   FiLogOut,
-  FiDollarSign,  // ✅ ADD THIS - for estimator icon
+  FiDollarSign,
 } from "react-icons/fi";
 import { API_BASE_URL, getAuthHeaders } from "../../api/config";
 import "./Sidebar.css";
@@ -21,7 +21,7 @@ import "./SidebarFooter.css";
 const navItems = [
   { key: "feed", icon: FiHome, label: "Explore" },
   { key: "sell", icon: FiPlusSquare, label: "List Gemstone" },
-  { key: "estimator", icon: FiDollarSign, label: "Price Estimator" },  // ✅ ADD THIS
+  { key: "estimator", icon: FiDollarSign, label: "Price Estimator" },
   { key: "notifications", icon: FiBell, label: "Notifications" },
   { key: "messages", icon: FiSend, label: "Messages" },
   { key: "report", icon: FiCompass, label: "Report" },
@@ -32,6 +32,7 @@ const navItems = [
 function Sidebar({ activeTab, onChangeTab, currentUser, onLogout }) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [requestsCount, setRequestsCount] = useState(0);
+  const [unreadMessagesCount, setUnreadMessagesCount] = useState(0); // ✅ NEW
 
   // store callback safely
   const onNewNotificationRef = useRef(null);
@@ -66,6 +67,7 @@ function Sidebar({ activeTab, onChangeTab, currentUser, onLogout }) {
 
     const fetchCounts = async () => {
       try {
+        // Fetch notification count
         const notifRes = await fetch(
           `${API_BASE_URL}/api/v1/notifications/unread-count`,
           { headers: getAuthHeaders() }
@@ -76,6 +78,7 @@ function Sidebar({ activeTab, onChangeTab, currentUser, onLogout }) {
           setUnreadCount(data.data?.count || 0);
         }
 
+        // Fetch follow requests count
         const reqRes = await fetch(
           `${API_BASE_URL}/api/v1/users/follow-requests/count`,
           { headers: getAuthHeaders() }
@@ -84,6 +87,17 @@ function Sidebar({ activeTab, onChangeTab, currentUser, onLogout }) {
         if (reqRes.ok) {
           const data = await reqRes.json();
           setRequestsCount(data.data?.count || 0);
+        }
+
+        // ✅ NEW: Fetch unread messages count
+        const msgRes = await fetch(
+          `${API_BASE_URL}/api/v1/messages/unread-count`,
+          { headers: getAuthHeaders() }
+        );
+
+        if (msgRes.ok) {
+          const data = await msgRes.json();
+          setUnreadMessagesCount(data.data?.count || 0);
         }
       } catch (err) {
         console.error("Failed to fetch counts:", err);
@@ -98,6 +112,11 @@ function Sidebar({ activeTab, onChangeTab, currentUser, onLogout }) {
   /* ================= CALLBACKS ================= */
   const handleNotificationRead = (count = 1) => {
     setUnreadCount((prev) => Math.max(prev - count, 0));
+  };
+
+  // ✅ NEW: Callback to clear messages count when viewing messages
+  const handleMessagesRead = () => {
+    setUnreadMessagesCount(0);
   };
 
   const totalNotificationBadge = unreadCount + requestsCount;
@@ -125,11 +144,12 @@ function Sidebar({ activeTab, onChangeTab, currentUser, onLogout }) {
             className={
               "sidebar-nav-item" +
               (activeTab === key ? " sidebar-nav-item-active" : "") +
-              (key === "estimator" ? " sidebar-nav-item-highlight" : "")  // ✅ Optional highlight
+              (key === "estimator" ? " sidebar-nav-item-highlight" : "")
             }
             onClick={() =>
               onChangeTab(key, {
                 onNotificationRead: handleNotificationRead,
+                onMessagesRead: handleMessagesRead, // ✅ Pass callback
                 onNewNotification: (cb) => {
                   onNewNotificationRef.current = cb;
                 },
@@ -138,12 +158,22 @@ function Sidebar({ activeTab, onChangeTab, currentUser, onLogout }) {
           >
             <span className="sidebar-icon-wrapper">
               {React.createElement(icon, { className: "sidebar-icon" })}
+              
+              {/* Notifications Badge */}
               {key === "notifications" && totalNotificationBadge > 0 && (
                 <span className="sidebar-badge">
                   {totalNotificationBadge > 99 ? "99+" : totalNotificationBadge}
                 </span>
               )}
-              {/* ✅ Optional: Add "AI" badge for estimator */}
+              
+              {/* ✅ NEW: Messages Badge */}
+              {key === "messages" && unreadMessagesCount > 0 && (
+                <span className="sidebar-badge sidebar-badge-messages">
+                  {unreadMessagesCount > 99 ? "99+" : unreadMessagesCount}
+                </span>
+              )}
+              
+              {/* AI Badge for Estimator */}
               {key === "estimator" && (
                 <span className="sidebar-ai-badge">AI</span>
               )}
