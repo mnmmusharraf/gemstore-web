@@ -16,15 +16,15 @@ import PeopleSection from "../../components/people/PeopleSection";
 function HomePage({ currentUser, onLogout }) {
   const [activeTab, setActiveTab] = useState("feed");
   const [viewingUserId, setViewingUserId] = useState(null);
-  const [notificationApi, setNotificationApi] = useState(null);
+  const [tabCallbacks, setTabCallbacks] = useState(null); // ✅ Renamed for clarity
 
   const notificationProps = useMemo(() => {
-    if (!notificationApi) return {};
+    if (!tabCallbacks) return {};
     return {
-      onNotificationRead: notificationApi.onNotificationRead,
-      onNewNotification: notificationApi.onNewNotification,
+      onNotificationRead: tabCallbacks.onNotificationRead,
+      onNewNotification: tabCallbacks.onNewNotification,
     };
-  }, [notificationApi]);
+  }, [tabCallbacks]);
 
   // Handle clicking on a seller in the feed
   const handleSellerClick = (sellerId) => {
@@ -45,9 +45,7 @@ function HomePage({ currentUser, onLogout }) {
 
   // Handle creating listing from price estimate
   const handleCreateListingFromEstimate = (estimateData) => {
-    // Switch to sell tab with pre-filled data
     setActiveTab("sell");
-    // You can pass the estimate data to SellFormSection via state or context
     console.log("Create listing with estimate:", estimateData);
   };
 
@@ -57,7 +55,6 @@ function HomePage({ currentUser, onLogout }) {
       ? " main-root--profile"
       : "");
 
-  // Determine if we should show the rightbar with estimator
   const showRightbar = !["profile", "publicProfile", "messages"].includes(activeTab);
 
   return (
@@ -67,7 +64,7 @@ function HomePage({ currentUser, onLogout }) {
         onChangeTab={(tab, api) => {
           setActiveTab(tab);
           setViewingUserId(null);
-          if (api) setNotificationApi(api);
+          if (api) setTabCallbacks(api); // ✅ Store all callbacks
         }}
         currentUser={currentUser}
         onLogout={onLogout}
@@ -84,7 +81,13 @@ function HomePage({ currentUser, onLogout }) {
 
         {activeTab === "sell" && <SellFormSection />}
 
-        {activeTab === "messages" && <MessagesSection />}
+        {/* ✅ UPDATED: Pass onMessagesRead callback */}
+        {activeTab === "messages" && (
+          <MessagesSection 
+            onMessagesRead={tabCallbacks?.onMessagesRead}
+            onUserClick={handleSellerClick}
+          />
+        )}
 
         {activeTab === "report" && <ReportSection />}
 
@@ -122,7 +125,6 @@ function HomePage({ currentUser, onLogout }) {
           />
         )}
 
-        {/* Estimator Tab - Full page view */}
         {activeTab === "estimator" && (
           <section className="estimator-page">
             <div className="estimator-page-header">
@@ -144,10 +146,8 @@ function HomePage({ currentUser, onLogout }) {
         )}
       </main>
 
-      {/* Rightbar with Price Estimator Widget */}
       {showRightbar && (
         <Rightbar>
-          {/* Estimator Widget in Sidebar */}
           <div className="rightbar-estimator">
             <div className="rightbar-section-header">
               <h3 className="rightbar-section-title">

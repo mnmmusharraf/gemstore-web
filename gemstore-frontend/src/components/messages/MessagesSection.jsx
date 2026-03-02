@@ -1,52 +1,81 @@
-import React from "react";
-import "./MessagesSection.css";
+import React, { useEffect, useState } from 'react';
+import ConversationList from './ConversationList';
+import ChatWindow from './ChatWindow';
+import EmptyState from './EmptyState';
+import { useMessages } from '../../hooks/useMessages';
+import './MessagesSection.css';
 
-const conversations = [
-  {
-    id: 1,
-    name: "aurora_gems",
-    lastMessage: "Is the emerald still available?",
-    time: "2h",
-  },
-  {
-    id: 2,
-    name: "bluecore_stones",
-    lastMessage: "Can you share certification details?",
-    time: "1d",
-  },
-];
+function MessagesSection({ onMessagesRead, onUserClick }) {  // ✅ Add onUserClick prop
+  const {
+    conversations,
+    activeConversation,
+    messages,
+    loading,
+    sending,
+    typingUsers,
+    isConnected,
+    selectConversation,
+    sendMessage,
+    sendTyping,
+  } = useMessages();
 
-function MessagesSection() {
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  // Clear unread count when component mounts
+  useEffect(() => {
+    onMessagesRead?.();
+  }, [onMessagesRead]);
+
+  // Handle resize
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const isPartnerTyping = activeConversation 
+    ? typingUsers[activeConversation.partnerId] 
+    : false;
+
+  // Handle back button on mobile
+  const handleBack = () => {
+    selectConversation(null);
+  };
+
+  // ✅ Handle profile click - navigate to user's profile
+  const handleProfileClick = () => {
+    if (activeConversation && onUserClick) {
+      onUserClick(activeConversation.partnerId);
+    }
+  };
+
   return (
-    <div className="messages-layout">
-      <div className="messages-sidebar">
-        <div className="messages-header">Inbox</div>
-        {conversations.map((c) => (
-          <button key={c.id} className="messages-item">
-            <div className="messages-avatar">
-              {c.name.charAt(0).toUpperCase()}
-            </div>
-            <div className="messages-text">
-              <div className="messages-name">{c.name}</div>
-              <div className="messages-preview">{c.lastMessage}</div>
-            </div>
-            <div className="messages-time">{c.time}</div>
-          </button>
-        ))}
-      </div>
+    <div className={`messages-layout ${activeConversation ? 'chat-open' : ''}`}>
+      <ConversationList
+        conversations={conversations}
+        activeConversation={activeConversation}
+        onSelectConversation={selectConversation}
+        loading={loading && conversations.length === 0}
+      />
 
-      <div className="messages-main">
-        <div className="messages-main-header">
-          <div className="messages-main-name">Select a conversation</div>
-          <div className="messages-main-sub">
-            Start messaging buyers and sellers securely.
-          </div>
-        </div>
-        <div className="messages-main-empty">
-          <p>No conversation selected.</p>
-          <p>Choose a chat from the left to start messaging.</p>
-        </div>
-      </div>
+      {activeConversation ? (
+        <ChatWindow
+          conversation={activeConversation}
+          messages={messages}
+          loading={loading}
+          sending={sending}
+          isTyping={isPartnerTyping}
+          isConnected={isConnected}
+          onSendMessage={sendMessage}
+          onTyping={sendTyping}
+          onBack={isMobile ? handleBack : null}
+          onProfileClick={handleProfileClick}  // ✅ Pass profile click handler
+        />
+      ) : (
+        <EmptyState />
+      )}
     </div>
   );
 }
