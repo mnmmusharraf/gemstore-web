@@ -4,9 +4,9 @@ import FeedCard from './FeedCard';
 import FeedSkeleton from './FeedSkeleton';
 import './FeedSection.css';
 
-function FeedSection({onSellerClick})  {
+function FeedSection({ onSellerClick, onInquire }) {  // ✅ Add onInquire to props
   const {
-    listings = [],  // Default to empty array
+    listings = [],
     loading,
     error,
     hasMore,
@@ -49,7 +49,7 @@ function FeedSection({onSellerClick})  {
   }, [loading, hasMore, loadMore]);
 
   // Error state
-  if (error && (! listings || listings.length === 0)) {
+  if (error && (!listings || listings.length === 0)) {
     return (
       <div className="feed-container">
         <div className="feed-error">
@@ -62,7 +62,7 @@ function FeedSection({onSellerClick})  {
   }
 
   // Empty state
-  if (! loading && (! listings || listings.length === 0)) {
+  if (!loading && (!listings || listings.length === 0)) {
     return (
       <div className="feed-container">
         <div className="feed-empty">
@@ -85,6 +85,7 @@ function FeedSection({onSellerClick})  {
             listing={listing}
             onLike={toggleLike}
             onSave={toggleFavorite}
+            onInquire={onInquire}  // ✅ ADD THIS LINE
             isAuthenticated={isAuthenticated}
             onSellerClick={onSellerClick}
           />

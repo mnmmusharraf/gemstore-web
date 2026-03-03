@@ -16,7 +16,8 @@ import PeopleSection from "../../components/people/PeopleSection";
 function HomePage({ currentUser, onLogout }) {
   const [activeTab, setActiveTab] = useState("feed");
   const [viewingUserId, setViewingUserId] = useState(null);
-  const [tabCallbacks, setTabCallbacks] = useState(null); // ✅ Renamed for clarity
+  const [tabCallbacks, setTabCallbacks] = useState(null);
+  const [inquiryData, setInquiryData] = useState(null);  // ✅ NEW
 
   const notificationProps = useMemo(() => {
     if (!tabCallbacks) return {};
@@ -26,7 +27,6 @@ function HomePage({ currentUser, onLogout }) {
     };
   }, [tabCallbacks]);
 
-  // Handle clicking on a seller in the feed
   const handleSellerClick = (sellerId) => {
     if (sellerId === currentUser?.id) {
       setActiveTab("profile");
@@ -37,16 +37,26 @@ function HomePage({ currentUser, onLogout }) {
     }
   };
 
-  // Handle back from public profile
   const handleBackFromPublicProfile = () => {
     setActiveTab("feed");
     setViewingUserId(null);
   };
 
-  // Handle creating listing from price estimate
   const handleCreateListingFromEstimate = (estimateData) => {
     setActiveTab("sell");
     console.log("Create listing with estimate:", estimateData);
+  };
+
+  // ✅ NEW: Handle inquiry from FeedCard
+  const handleInquire = (data) => {
+    console.log("Starting inquiry:", data);
+    setInquiryData(data);
+    setActiveTab("messages");
+  };
+
+  // ✅ NEW: Clear inquiry data after it's handled
+  const handleInquiryHandled = () => {
+    setInquiryData(null);
   };
 
   const mainRootClass =
@@ -64,7 +74,7 @@ function HomePage({ currentUser, onLogout }) {
         onChangeTab={(tab, api) => {
           setActiveTab(tab);
           setViewingUserId(null);
-          if (api) setTabCallbacks(api); // ✅ Store all callbacks
+          if (api) setTabCallbacks(api);
         }}
         currentUser={currentUser}
         onLogout={onLogout}
@@ -76,16 +86,20 @@ function HomePage({ currentUser, onLogout }) {
         )}
 
         {activeTab === "feed" && (
-          <FeedSection onSellerClick={handleSellerClick} />
+          <FeedSection 
+            onSellerClick={handleSellerClick}
+            onInquire={handleInquire}  // ✅ Pass handler
+          />
         )}
 
         {activeTab === "sell" && <SellFormSection />}
 
-        {/* ✅ UPDATED: Pass onMessagesRead callback */}
         {activeTab === "messages" && (
           <MessagesSection 
             onMessagesRead={tabCallbacks?.onMessagesRead}
             onUserClick={handleSellerClick}
+            inquiryData={inquiryData}  // ✅ Pass inquiry data
+            onInquiryHandled={handleInquiryHandled}  // ✅ Clear callback
           />
         )}
 

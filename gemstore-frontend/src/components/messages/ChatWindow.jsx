@@ -5,7 +5,6 @@ import TypingIndicator from './TypingIndicator';
 import { getAuthToken } from '../../api/config';
 import './MessagesSection.css';
 
-// Helper to get user ID from token
 const getCurrentUserId = () => {
   const token = getAuthToken();
   if (!token) return null;
@@ -28,19 +27,21 @@ function ChatWindow({
   onTyping,
   onBack,
   onProfileClick,
+  pendingListing,
+  onClearPendingListing,
+  pendingMessage,
+  onClearPendingMessage,
 }) {
   const messagesEndRef = useRef(null);
   const messagesContainerRef = useRef(null);
   const currentUserId = getCurrentUserId();
 
-  // Scroll to bottom when messages change
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages, isTyping]);
 
-  // Also scroll on initial load
   useEffect(() => {
     if (messagesContainerRef.current && messages.length > 0) {
       messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
@@ -48,8 +49,19 @@ function ChatWindow({
   }, [conversation?.partnerId, messages.length]);
 
   const handleSend = async (content) => {
-    await onSendMessage(content);
+    if (pendingListing) {
+      await onSendMessage(content, 'LISTING', pendingListing.id);
+      onClearPendingListing?.();
+      onClearPendingMessage?.();
+    } else {
+      await onSendMessage(content);
+    }
   };
+
+  // ✅ Fixed: Use stable values for key - no Date.now()
+  const inputKey = pendingMessage 
+    ? `inquiry-${conversation?.partnerId}-${pendingListing?.id || 'listing'}` 
+    : `normal-${conversation?.partnerId || 'none'}`;
 
   return (
     <div className="chat-window">
@@ -85,14 +97,10 @@ function ChatWindow({
           </div>
         </div>
         <div className="chat-actions">
-          <span className={`connection-indicator ${isConnected ? 'connected' : 'disconnected'}`} title={isConnected ? 'Connected' : 'Disconnected'}>
+          <span className={`connection-indicator ${isConnected ? 'connected' : 'disconnected'}`}>
             <span className="connection-dot"></span>
           </span>
-          <button 
-            className="chat-action-btn" 
-            title="View Profile"
-            onClick={onProfileClick}
-          >
+          <button className="chat-action-btn" title="View Profile" onClick={onProfileClick}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="12" cy="12" r="10"></circle>
               <circle cx="12" cy="10" r="3"></circle>
@@ -124,9 +132,7 @@ function ChatWindow({
           </div>
         ) : (
           <>
-            {/* ✅ ADD THIS SPACER - Pushes messages to bottom */}
             <div className="messages-spacer" />
-            
             {messages.map((message, index) => (
               <MessageBubble
                 key={message.id || index}
@@ -153,12 +159,49 @@ function ChatWindow({
         )}
       </div>
 
-      {/* Message Input */}
+      {/* Listing Preview Above Input */}
+      {pendingListing && (
+        <div className="listing-preview-bar">
+          <div className="listing-preview-content">
+            {pendingListing.imageUrl && (
+              <img 
+                src={pendingListing.imageUrl} 
+                alt={pendingListing.title}
+                className="listing-preview-image"
+              />
+            )}
+            <div className="listing-preview-info">
+              <span className="listing-preview-label">Asking about:</span>
+              <span className="listing-preview-title">{pendingListing.title}</span>
+              <span className="listing-preview-price">{pendingListing.formattedPrice}</span>
+            </div>
+          </div>
+          <button 
+            className="listing-preview-close"
+            onClick={() => {
+              onClearPendingListing?.();
+              onClearPendingMessage?.();
+            }}
+            title="Remove"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+      )}
+
+      {/* Message Input with key to force remount */}
       <MessageInput 
+        key={inputKey}
         onSendMessage={handleSend}
         onTyping={onTyping}
         disabled={sending || !isConnected}
         sending={sending}
+        placeholder={pendingListing ? `Ask about ${pendingListing.title}...` : 'Type a message...'}
+        defaultMessage={pendingMessage}
+        onMessageChange={onClearPendingMessage}
       />
     </div>
   );

@@ -1,72 +1,85 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './MessagesSection.css';
 
-function MessageInput({ onSendMessage, onTyping, disabled, sending }) {
-  const [message, setMessage] = useState('');
-  const inputRef = useRef(null);
-  const typingTimeoutRef = useRef(null);
+function MessageInput({ 
+  onSendMessage, 
+  onTyping, 
+  disabled, 
+  sending,
+  placeholder = 'Type a message...',
+  defaultMessage = '',
+  onMessageChange,
+}) {
+  // Initialize with defaultMessage
+  const [message, setMessage] = useState(defaultMessage);
+  const textareaRef = useRef(null);
 
+  // Focus and resize on mount if there's a default message
   useEffect(() => {
-    inputRef.current?.focus();
-  }, []);
-
-  const handleChange = (e) => {
-    setMessage(e.target.value);
-
-    // Send typing indicator
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
+    if (defaultMessage && textareaRef.current) {
+      textareaRef.current.focus();
+      // Use requestAnimationFrame for reliable resize
+      requestAnimationFrame(() => {
+        if (textareaRef.current) {
+          textareaRef.current.style.height = 'auto';
+          textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 120)}px`;
+        }
+      });
     }
-
-    onTyping?.(true);
-
-    typingTimeoutRef.current = setTimeout(() => {
-      onTyping?.(false);
-    }, 1000);
-  };
+  }, []); // Only on mount
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e?.preventDefault();
     
-    if (!message.trim() || disabled) return;
+    const trimmedMessage = message.trim();
+    if (!trimmedMessage || disabled) return;
 
-    const content = message.trim();
-    setMessage('');
-    
-    // Stop typing indicator
-    onTyping?.(false);
-    
     try {
-      await onSendMessage(content);
+      await onSendMessage(trimmedMessage);
+      setMessage('');
+      onMessageChange?.();
+      
+      if (textareaRef.current) {
+        textareaRef.current.style.height = 'auto';
+      }
     } catch (error) {
       console.error('Failed to send message:', error);
-      // Restore message on error
-      setMessage(content);
     }
   };
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSubmit(e);
+      handleSubmit();
     }
   };
 
+  const handleChange = (e) => {
+    setMessage(e.target.value);
+    onTyping?.();
+
+    // Auto-resize textarea
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 120)}px`;
+    }
+  };
+
+  const hasContent = message.trim().length > 0;
+
   return (
-    <form className="message-input-container" onSubmit={handleSubmit}>
+    <div className="message-input-container">
       <div className="message-input-wrapper">
-        {/* Attachment Button */}
-        <button type="button" className="input-action-btn" title="Attach file">
+        <button className="input-action-btn" title="Attach file" type="button">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"></path>
+            <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" />
           </svg>
         </button>
 
-        {/* Text Input */}
         <textarea
-          ref={inputRef}
+          ref={textareaRef}
           className="message-input"
-          placeholder="Type a message..."
+          placeholder={placeholder}
           value={message}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
@@ -74,8 +87,7 @@ function MessageInput({ onSendMessage, onTyping, disabled, sending }) {
           rows={1}
         />
 
-        {/* Emoji Button */}
-        <button type="button" className="input-action-btn" title="Add emoji">
+        <button className="input-action-btn" title="Emoji" type="button">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <circle cx="12" cy="12" r="10"></circle>
             <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
@@ -85,11 +97,12 @@ function MessageInput({ onSendMessage, onTyping, disabled, sending }) {
         </button>
       </div>
 
-      {/* Send Button */}
-      <button 
-        type="submit" 
-        className={`send-button ${message.trim() ? 'active' : ''}`}
-        disabled={!message.trim() || disabled}
+      <button
+        className={`send-button ${hasContent ? 'active' : ''}`}
+        onClick={handleSubmit}
+        disabled={!hasContent || disabled}
+        title="Send"
+        type="button"
       >
         {sending ? (
           <div className="send-spinner"></div>
@@ -100,7 +113,7 @@ function MessageInput({ onSendMessage, onTyping, disabled, sending }) {
           </svg>
         )}
       </button>
-    </form>
+    </div>
   );
 }
 
