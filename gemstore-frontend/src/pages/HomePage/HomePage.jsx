@@ -14,7 +14,7 @@ import NotificationsSection from "../../components/notifications/NotificationsSe
 import PeopleSection from "../../components/people/PeopleSection";
 import ShareToChatModal from "../../components/messages/ShareToChatModal";
 import messageService from "../../api/messageService";
-import { toast } from 'sonner';
+import { toast } from "sonner";
 
 function HomePage({ currentUser, onLogout }) {
   const [activeTab, setActiveTab] = useState("feed");
@@ -31,6 +31,10 @@ function HomePage({ currentUser, onLogout }) {
     };
   }, [tabCallbacks]);
 
+  // ===============================
+  // NAVIGATION
+  // ===============================
+
   const handleSellerClick = (sellerId) => {
     if (sellerId === currentUser?.id) {
       setActiveTab("profile");
@@ -46,37 +50,65 @@ function HomePage({ currentUser, onLogout }) {
     setViewingUserId(null);
   };
 
+  // ===============================
+  // 🔥 NEW: DIRECT MESSAGE FROM PROFILE
+  // ===============================
+
+  const handleMessageFromProfile = (data) => {
+    console.log("Starting message from profile:", data);
+
+    setInquiryData({
+      sellerId: data.recipientId,
+      sellerName: data.recipientName,
+      sellerAvatar: data.recipientAvatar,
+      listing: null,
+      isDirectMessage: true,
+    });
+
+    setActiveTab("messages");
+  };
+
+  // ===============================
+  // ESTIMATOR
+  // ===============================
+
   const handleCreateListingFromEstimate = (estimateData) => {
     setActiveTab("sell");
     console.log("Create listing with estimate:", estimateData);
   };
 
-  // Handle inquiry from FeedCard (contacts seller)
+  // ===============================
+  // INQUIRY FROM FEED
+  // ===============================
+
   const handleInquire = (data) => {
     console.log("Starting inquiry:", data);
     setInquiryData(data);
     setActiveTab("messages");
   };
 
-  // Clear inquiry data after it's handled
   const handleInquiryHandled = () => {
     setInquiryData(null);
   };
 
-  // Handle share to chat from FeedCard (opens modal)
+  // ===============================
+  // SHARE TO CHAT
+  // ===============================
+
   const handleShareToChat = (data) => {
     console.log("Opening share modal:", data);
     setShareData(data);
   };
 
-  // ✅ Handle actual share action - sends to multiple people
   const handleShareSend = async (conversations, listing, customMessage) => {
-    console.log("Sharing listing to:", conversations.map(c => c.partnerDisplayName));
-    
-    // Create share message content
-    const shareText = customMessage?.trim() || "Check out this listing! 👀";
-    
-    // Embed listing data in message
+    console.log(
+      "Sharing listing to:",
+      conversations.map((c) => c.partnerDisplayName)
+    );
+
+    const shareText =
+      customMessage?.trim() || "Check out this listing! 👀";
+
     const listingData = {
       id: listing.id,
       title: listing.title,
@@ -86,34 +118,41 @@ function HomePage({ currentUser, onLogout }) {
       imageUrl: listing.imageUrl,
       gemstoneType: listing.gemstoneType,
     };
-    
-    const embeddedContent = `[LISTING:${JSON.stringify(listingData)}]${shareText}`;
-    
-    // Send to all selected conversations
+
+    const embeddedContent = `[LISTING:${JSON.stringify(
+      listingData
+    )}]${shareText}`;
+
     try {
-      const sendPromises = conversations.map(conv => 
+      const sendPromises = conversations.map((conv) =>
         messageService.sendMessage(
           conv.partnerId,
           embeddedContent,
-          'LISTING',
+          "LISTING",
           listing.id
         )
       );
-      
+
       await Promise.all(sendPromises);
-      
-      // Show success toast
-      toast.success(`Shared to ${conversations.length} ${conversations.length === 1 ? 'person' : 'people'}!`);
+
+      toast.success(
+        `Shared to ${conversations.length} ${
+          conversations.length === 1 ? "person" : "people"
+        }!`
+      );
     } catch (error) {
-      console.error('Failed to share:', error);
-      toast.error('Failed to share. Please try again.');
+      console.error("Failed to share:", error);
+      toast.error("Failed to share. Please try again.");
     }
   };
 
-  // Close share modal
   const handleCloseShareModal = () => {
     setShareData(null);
   };
+
+  // ===============================
+  // UI HELPERS
+  // ===============================
 
   const mainRootClass =
     "main-root" +
@@ -121,7 +160,15 @@ function HomePage({ currentUser, onLogout }) {
       ? " main-root--profile"
       : "");
 
-  const showRightbar = !["profile", "publicProfile", "messages"].includes(activeTab);
+  const showRightbar = ![
+    "profile",
+    "publicProfile",
+    "messages",
+  ].includes(activeTab);
+
+  // ===============================
+  // RENDER
+  // ===============================
 
   return (
     <div className={mainRootClass}>
@@ -137,12 +184,13 @@ function HomePage({ currentUser, onLogout }) {
       />
 
       <main className="main-content">
-        {activeTab !== "profile" && activeTab !== "publicProfile" && (
-          <Topbar activeTab={activeTab} />
-        )}
+        {activeTab !== "profile" &&
+          activeTab !== "publicProfile" && (
+            <Topbar activeTab={activeTab} />
+          )}
 
         {activeTab === "feed" && (
-          <FeedSection 
+          <FeedSection
             onSellerClick={handleSellerClick}
             onInquire={handleInquire}
             onShareToChat={handleShareToChat}
@@ -152,7 +200,7 @@ function HomePage({ currentUser, onLogout }) {
         {activeTab === "sell" && <SellFormSection />}
 
         {activeTab === "messages" && (
-          <MessagesSection 
+          <MessagesSection
             onMessagesRead={tabCallbacks?.onMessagesRead}
             onUserClick={handleSellerClick}
             inquiryData={inquiryData}
@@ -180,13 +228,15 @@ function HomePage({ currentUser, onLogout }) {
           />
         )}
 
-        {activeTab === "publicProfile" && viewingUserId && (
-          <PublicProfilePage
-            currentUser={currentUser}
-            userId={viewingUserId}
-            onBack={handleBackFromPublicProfile}
-          />
-        )}
+        {activeTab === "publicProfile" &&
+          viewingUserId && (
+            <PublicProfilePage
+              currentUser={currentUser}
+              userId={viewingUserId}
+              onBack={handleBackFromPublicProfile}
+              onMessage={handleMessageFromProfile}  // ✅ ADDED HERE
+            />
+          )}
 
         {activeTab === "notifications" && (
           <NotificationsSection
@@ -200,16 +250,18 @@ function HomePage({ currentUser, onLogout }) {
           <section className="estimator-page">
             <div className="estimator-page-header">
               <h1 className="estimator-page-title">
-                <span className="title-icon">💎</span>
-                AI Price Estimator
+                💎 AI Price Estimator
               </h1>
               <p className="estimator-page-subtitle">
-                Get instant, AI-powered price estimates for your precious gemstones
+                Get instant, AI-powered price estimates
+                for your precious gemstones
               </p>
             </div>
             <div className="estimator-page-content">
-              <PriceEstimatorForm 
-                onCreateListing={handleCreateListingFromEstimate}
+              <PriceEstimatorForm
+                onCreateListing={
+                  handleCreateListingFromEstimate
+                }
                 fullPage={true}
               />
             </div>
@@ -222,26 +274,28 @@ function HomePage({ currentUser, onLogout }) {
           <div className="rightbar-estimator">
             <div className="rightbar-section-header">
               <h3 className="rightbar-section-title">
-                <span className="section-icon">✨</span>
-                Quick Price Estimate
+                ✨ Quick Price Estimate
               </h3>
-              <button 
+              <button
                 className="expand-btn"
-                onClick={() => setActiveTab("estimator")}
+                onClick={() =>
+                  setActiveTab("estimator")
+                }
                 title="Open full estimator"
               >
                 ↗
               </button>
             </div>
-            <PriceEstimatorForm 
+            <PriceEstimatorForm
               compact={true}
-              onCreateListing={handleCreateListingFromEstimate}
+              onCreateListing={
+                handleCreateListingFromEstimate
+              }
             />
           </div>
         </Rightbar>
       )}
 
-      {/* Share to Chat Modal */}
       {shareData && (
         <ShareToChatModal
           listing={shareData.listing}

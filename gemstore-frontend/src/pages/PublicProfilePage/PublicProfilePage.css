@@ -383,3 +383,52 @@
     gap: 2px;
   }
 }
+/* ================= PROFILE ACTIONS ================= */
+.public-profile-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* ================= MESSAGE BUTTON ================= */
+.public-profile-message-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid var(--border-soft);
+  background: var(--bg);
+  color: var(--text-main);
+}
+
+.public-profile-message-btn:hover {
+  background: var(--sidebar-hover-bg);
+}
+
+.public-profile-message-btn svg {
+  flex-shrink: 0;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 768px) {
+  .public-profile-actions {
+    flex-direction: row;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .public-profile-message-btn {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .public-profile-follow-btn {
+    flex: 1;
+    text-align: center;
+  }
+}

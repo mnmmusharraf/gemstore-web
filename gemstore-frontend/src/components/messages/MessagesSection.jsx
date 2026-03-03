@@ -42,7 +42,7 @@ function MessagesSection({
       return;
     }
 
-    const inquiryKey = `${inquiryData.sellerId}-${inquiryData.listing?.id || 'none'}`;
+    const inquiryKey = `${inquiryData.sellerId}-${inquiryData.listing?.id || 'direct'}`;
     
     if (processedInquiryKey === inquiryKey) {
       return;
@@ -50,13 +50,16 @@ function MessagesSection({
 
     console.log('🚀 Processing inquiry:', inquiryKey);
 
-    const { sellerId, sellerName, sellerAvatar, listing } = inquiryData;
+    const { sellerId, sellerName, sellerAvatar, listing, isDirectMessage } = inquiryData;
 
-    // Set listing and message
-    if (listing) {
+    // ✅ Only set pending listing if there's a listing (not direct message)
+    if (listing && !isDirectMessage) {
       setPendingListing(listing);
-      // ��� Simplified message - listing info will be shown in the card
       setPendingMessage('Is this still available?');
+    } else {
+      // Direct message - no pre-filled content
+      setPendingListing(null);
+      setPendingMessage('');
     }
 
     setProcessedInquiryKey(inquiryKey);
