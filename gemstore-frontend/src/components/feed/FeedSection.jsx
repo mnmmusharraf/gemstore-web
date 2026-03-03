@@ -4,7 +4,7 @@ import FeedCard from './FeedCard';
 import FeedSkeleton from './FeedSkeleton';
 import './FeedSection.css';
 
-function FeedSection({ onSellerClick, onInquire }) {  // ✅ Add onInquire to props
+function FeedSection({ onSellerClick, onInquire, onShareToChat }) {  // ✅ Add onInquire to props
   const {
     listings = [],
     loading,
@@ -86,6 +86,7 @@ function FeedSection({ onSellerClick, onInquire }) {  // ✅ Add onInquire to pr
             onLike={toggleLike}
             onSave={toggleFavorite}
             onInquire={onInquire}  // ✅ ADD THIS LINE
+            onShareToChat={onShareToChat}
             isAuthenticated={isAuthenticated}
             onSellerClick={onSellerClick}
           />

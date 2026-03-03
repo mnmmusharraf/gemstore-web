@@ -1,0 +1,431 @@
+/* Share Modal - Using Theme Variables */
+
+.share-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 2rem;
+  animation: shareModalFadeIn 0.15s ease;
+}
+
+@keyframes shareModalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.share-modal {
+  background: var(--bg-elevated);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 400px;
+  max-height: calc(100vh - 100px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: shareModalSlideUp 0.2s ease;
+  border: 1px solid var(--border-soft);
+}
+
+@keyframes shareModalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Header */
+.share-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.875rem 1.25rem;
+  border-bottom: 1px solid var(--border-soft);
+  flex-shrink: 0;
+}
+
+.share-modal-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.share-modal-close {
+  background: transparent;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: all 0.15s ease;
+}
+
+.share-modal-close:hover {
+  background: var(--sidebar-hover-bg);
+  color: var(--text-main);
+}
+
+/* Listing Preview */
+.share-listing-preview {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.25rem;
+  background: var(--bg-subtle);
+  flex-shrink: 0;
+}
+
+.share-listing-image {
+  width: 56px;
+  height: 56px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.share-listing-placeholder {
+  width: 56px;
+  height: 56px;
+  border-radius: 8px;
+  background: var(--input-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.share-listing-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.share-listing-type {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.share-listing-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.share-listing-price {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+/* Custom Message Input */
+.share-message-input {
+  padding: 0.625rem 1.25rem;
+  border-bottom: 1px solid var(--border-soft);
+  flex-shrink: 0;
+}
+
+.share-message-input input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 8px;
+  color: var(--text-main);
+  font-size: 0.85rem;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.share-message-input input:focus {
+  border-color: var(--primary);
+}
+
+.share-message-input input::placeholder {
+  color: var(--text-muted);
+}
+
+/* Search */
+.share-search {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1.25rem;
+  border-bottom: 1px solid var(--border-soft);
+  flex-shrink: 0;
+}
+
+.share-search svg {
+  color: var(--text-muted);
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+}
+
+.share-search input {
+  flex: 1;
+  padding: 0.375rem 0;
+  background: transparent;
+  border: none;
+  color: var(--text-main);
+  font-size: 0.85rem;
+  outline: none;
+}
+
+.share-search input::placeholder {
+  color: var(--text-muted);
+}
+
+/* Selected Count */
+.share-selected-count {
+  padding: 0.375rem 1.25rem;
+  font-size: 0.75rem;
+  color: var(--primary);
+  font-weight: 600;
+  background: rgba(var(--primary-rgb), 0.1);
+  border-bottom: 1px solid var(--border-soft);
+  flex-shrink: 0;
+}
+
+/* Conversations List - Scrollable */
+.share-conversations {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.5rem;
+  min-height: 100px;
+  max-height: 180px;
+}
+
+.share-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  gap: 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.share-loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border-soft);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: shareSpinner 0.8s linear infinite;
+}
+
+@keyframes shareSpinner {
+  to { transform: rotate(360deg); }
+}
+
+.share-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem 1rem;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.share-conversation-item {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  width: 100%;
+  padding: 0.625rem;
+  background: transparent;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+  color: var(--text-main);
+  margin-bottom: 0.25rem;
+}
+
+.share-conversation-item:hover {
+  background: var(--sidebar-hover-bg);
+}
+
+.share-conversation-item.selected {
+  background: rgba(var(--primary-rgb), 0.1);
+  border-color: var(--primary);
+}
+
+.share-conv-avatar {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--accent-avatar-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.share-conv-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.share-conv-avatar span {
+  font-weight: 600;
+  color: #0f172a;
+  font-size: 0.9rem;
+}
+
+.share-online-dot {
+  position: absolute;
+  bottom: 1px;
+  right: 1px;
+  width: 10px;
+  height: 10px;
+  background: #22c55e;
+  border: 2px solid var(--bg-elevated);
+  border-radius: 50%;
+}
+
+.share-conv-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.share-conv-name {
+  font-weight: 500;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Checkbox */
+.share-checkbox {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border-strong);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.share-checkbox.checked {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
+/* Footer - Always Visible */
+.share-modal-footer {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.875rem 1.25rem;
+  border-top: 1px solid var(--border-soft);
+  background: var(--bg-elevated);
+  flex-shrink: 0;
+}
+
+.share-cancel-btn,
+.share-send-btn {
+  flex: 1;
+  padding: 0.625rem 1rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.share-cancel-btn {
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  color: var(--text-main);
+}
+
+.share-cancel-btn:hover {
+  background: var(--sidebar-hover-bg);
+}
+
+.share-send-btn {
+  background: var(--primary);
+  border: none;
+  color: #fff;
+}
+
+.share-send-btn:hover:not(:disabled) {
+  background: var(--primary-hover);
+}
+
+.share-send-btn:disabled {
+  background: var(--primary-disabled);
+  cursor: not-allowed;
+}
+
+.share-btn-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: shareSpinner 0.8s linear infinite;
+}
+
+/* Scrollbar */
+.share-conversations::-webkit-scrollbar {
+  width: 5px;
+}
+
+.share-conversations::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.share-conversations::-webkit-scrollbar-thumb {
+  background: var(--border-soft);
+  border-radius: 3px;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .share-modal-overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+  
+  .share-modal {
+    max-height: 85vh;
+    border-radius: 16px 16px 0 0;
+    max-width: 100%;
+  }
+  
+  .share-conversations {
+    max-height: 35vh;
+  }
+}

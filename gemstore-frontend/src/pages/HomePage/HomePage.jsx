@@ -12,12 +12,16 @@ import ProfilePage from "../ProfilePage/ProfilePage";
 import PublicProfilePage from "../PublicProfilePage/PublicProfilePage";
 import NotificationsSection from "../../components/notifications/NotificationsSection";
 import PeopleSection from "../../components/people/PeopleSection";
+import ShareToChatModal from "../../components/messages/ShareToChatModal";
+import messageService from "../../api/messageService";
+import { toast } from 'sonner';
 
 function HomePage({ currentUser, onLogout }) {
   const [activeTab, setActiveTab] = useState("feed");
   const [viewingUserId, setViewingUserId] = useState(null);
   const [tabCallbacks, setTabCallbacks] = useState(null);
-  const [inquiryData, setInquiryData] = useState(null);  // ✅ NEW
+  const [inquiryData, setInquiryData] = useState(null);
+  const [shareData, setShareData] = useState(null);
 
   const notificationProps = useMemo(() => {
     if (!tabCallbacks) return {};
@@ -47,16 +51,68 @@ function HomePage({ currentUser, onLogout }) {
     console.log("Create listing with estimate:", estimateData);
   };
 
-  // ✅ NEW: Handle inquiry from FeedCard
+  // Handle inquiry from FeedCard (contacts seller)
   const handleInquire = (data) => {
     console.log("Starting inquiry:", data);
     setInquiryData(data);
     setActiveTab("messages");
   };
 
-  // ✅ NEW: Clear inquiry data after it's handled
+  // Clear inquiry data after it's handled
   const handleInquiryHandled = () => {
     setInquiryData(null);
+  };
+
+  // Handle share to chat from FeedCard (opens modal)
+  const handleShareToChat = (data) => {
+    console.log("Opening share modal:", data);
+    setShareData(data);
+  };
+
+  // ✅ Handle actual share action - sends to multiple people
+  const handleShareSend = async (conversations, listing, customMessage) => {
+    console.log("Sharing listing to:", conversations.map(c => c.partnerDisplayName));
+    
+    // Create share message content
+    const shareText = customMessage?.trim() || "Check out this listing! 👀";
+    
+    // Embed listing data in message
+    const listingData = {
+      id: listing.id,
+      title: listing.title,
+      price: listing.price,
+      currency: listing.currency,
+      formattedPrice: listing.formattedPrice,
+      imageUrl: listing.imageUrl,
+      gemstoneType: listing.gemstoneType,
+    };
+    
+    const embeddedContent = `[LISTING:${JSON.stringify(listingData)}]${shareText}`;
+    
+    // Send to all selected conversations
+    try {
+      const sendPromises = conversations.map(conv => 
+        messageService.sendMessage(
+          conv.partnerId,
+          embeddedContent,
+          'LISTING',
+          listing.id
+        )
+      );
+      
+      await Promise.all(sendPromises);
+      
+      // Show success toast
+      toast.success(`Shared to ${conversations.length} ${conversations.length === 1 ? 'person' : 'people'}!`);
+    } catch (error) {
+      console.error('Failed to share:', error);
+      toast.error('Failed to share. Please try again.');
+    }
+  };
+
+  // Close share modal
+  const handleCloseShareModal = () => {
+    setShareData(null);
   };
 
   const mainRootClass =
@@ -88,7 +144,8 @@ function HomePage({ currentUser, onLogout }) {
         {activeTab === "feed" && (
           <FeedSection 
             onSellerClick={handleSellerClick}
-            onInquire={handleInquire}  // ✅ Pass handler
+            onInquire={handleInquire}
+            onShareToChat={handleShareToChat}
           />
         )}
 
@@ -98,8 +155,8 @@ function HomePage({ currentUser, onLogout }) {
           <MessagesSection 
             onMessagesRead={tabCallbacks?.onMessagesRead}
             onUserClick={handleSellerClick}
-            inquiryData={inquiryData}  // ✅ Pass inquiry data
-            onInquiryHandled={handleInquiryHandled}  // ✅ Clear callback
+            inquiryData={inquiryData}
+            onInquiryHandled={handleInquiryHandled}
           />
         )}
 
@@ -182,6 +239,15 @@ function HomePage({ currentUser, onLogout }) {
             />
           </div>
         </Rightbar>
+      )}
+
+      {/* Share to Chat Modal */}
+      {shareData && (
+        <ShareToChatModal
+          listing={shareData.listing}
+          onClose={handleCloseShareModal}
+          onShare={handleShareSend}
+        />
       )}
     </div>
   );

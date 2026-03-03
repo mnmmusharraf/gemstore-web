@@ -11,6 +11,7 @@ const FeedCard = memo(function FeedCard({
   onSave, 
   onReport, 
   onInquire,
+  onShareToChat,  // ✅ NEW: Share to chat handler
   isAuthenticated, 
   onSellerClick 
 }) {
@@ -19,6 +20,7 @@ const FeedCard = memo(function FeedCard({
   const [isSaving, setIsSaving] = useState(false);
   const [showHeart, setShowHeart] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
+  const [showShareMenu, setShowShareMenu] = useState(false);  // ✅ NEW: Share menu state
 
   const [localLiked, setLocalLiked] = useState(listing.isLiked || false);
   const [localLikesCount, setLocalLikesCount] = useState(listing.likesCount || 0);
@@ -180,10 +182,7 @@ const FeedCard = memo(function FeedCard({
       return;
     }
 
-    // ✅ Get the first image URL properly
     const firstImageUrl = images[0]?.imageUrl || primaryImageUrl || imageUrl || null;
-    
-    console.log('📷 FeedCard sending inquiry with imageUrl:', firstImageUrl);
 
     if (typeof onInquire === 'function') {
       onInquire({
@@ -245,8 +244,16 @@ const FeedCard = memo(function FeedCard({
 
   const handleCardClick = () => navigate(`/listing/${id}`);
 
-  const handleShare = async (e) => {
+  // ✅ Toggle share menu
+  const handleShareClick = (e) => {
     e.stopPropagation();
+    setShowShareMenu(!showShareMenu);
+  };
+
+  // ✅ Share via native share / copy link
+  const handleShareExternal = async (e) => {
+    e?.stopPropagation();
+    setShowShareMenu(false);
 
     const shareUrl = `${window.location.origin}/listing/${id}`;
     const shareData = {
@@ -270,6 +277,41 @@ const FeedCard = memo(function FeedCard({
     }
   };
 
+  // ✅ NEW: Share to chat - opens conversation picker
+  const handleShareToChat = (e) => {
+    e?.stopPropagation();
+    setShowShareMenu(false);
+
+    if (!isAuthenticated) {
+      toast.error('Please login to share listings');
+      navigate('/login');
+      return;
+    }
+
+    const firstImageUrl = images[0]?.imageUrl || primaryImageUrl || imageUrl || null;
+
+    if (typeof onShareToChat === 'function') {
+      onShareToChat({
+        listing: {
+          id,
+          title,
+          price,
+          currency,
+          formattedPrice,
+          imageUrl: firstImageUrl,
+          gemstoneType,
+        }
+      });
+    } else {
+      toast.info('Share to chat coming soon!');
+    }
+  };
+
+  // ✅ Close share menu when clicking outside
+  const handleCloseShareMenu = () => {
+    setShowShareMenu(false);
+  };
+
   const toggleDetails = (e) => {
     e.stopPropagation();
     setShowDetails(!showDetails);
@@ -278,7 +320,7 @@ const FeedCard = memo(function FeedCard({
   // ===== RENDER =====
 
   return (
-    <article className="feed-card">
+    <article className="feed-card" onClick={showShareMenu ? handleCloseShareMenu : undefined}>
       {/* ===== HEADER ===== */}
       <header className="feed-header" onClick={handleSellerClick}>
         <div className="seller-avatar">
@@ -437,10 +479,27 @@ const FeedCard = memo(function FeedCard({
           <span>Inquire</span>
         </button>
 
-        <button className="action-btn" onClick={handleShare}>
-          <ShareIcon size={22} />
-          <span>Share</span>
-        </button>
+        {/* ✅ Share button with dropdown menu */}
+        <div className="share-btn-wrapper">
+          <button className="action-btn" onClick={handleShareClick}>
+            <ShareIcon size={22} />
+            <span>Share</span>
+          </button>
+          
+          {/* ✅ Share dropdown menu */}
+          {showShareMenu && (
+            <div className="share-menu">
+              <button className="share-menu-item" onClick={handleShareToChat}>
+                <MessageIcon size={18} />
+                <span>Send to Chat</span>
+              </button>
+              <button className="share-menu-item" onClick={handleShareExternal}>
+                <LinkIcon size={18} />
+                <span>Copy Link</span>
+              </button>
+            </div>
+          )}
+        </div>
 
         <button
           className={`action-btn ${localSaved ? 'saved' : ''}`}
@@ -487,6 +546,21 @@ const ShareIcon = ({ size = 24 }) => (
     <circle cx="18" cy="19" r="3" />
     <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
     <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+  </svg>
+);
+
+// ✅ NEW: Message icon for share to chat
+const MessageIcon = ({ size = 24 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+  </svg>
+);
+
+// ✅ NEW: Link icon for copy link
+const LinkIcon = ({ size = 24 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
   </svg>
 );
 
