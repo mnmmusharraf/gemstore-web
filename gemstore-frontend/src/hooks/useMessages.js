@@ -7,12 +7,13 @@ export function useMessages() {
   const [conversations, setConversations] = useState([]);
   const [activeConversation, setActiveConversation] = useState(null);
   const [messages, setMessages] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);  // ✅ Start as true
   const [sending, setSending] = useState(false);
   const [error, setError] = useState(null);
   const [typingUsers, setTypingUsers] = useState({});
   const [unreadCount, setUnreadCount] = useState(0);
   const [isConnected, setIsConnected] = useState(false);
+  const [conversationsLoaded, setConversationsLoaded] = useState(false);  // ✅ NEW
   
   const typingTimeoutRef = useRef(null);
   const activeConversationRef = useRef(activeConversation);
@@ -36,6 +37,7 @@ export function useMessages() {
       console.error('Error loading conversations:', err);
     } finally {
       setLoading(false);
+      setConversationsLoaded(true);  // ✅ Mark as loaded
     }
   }, []);
 
@@ -173,11 +175,9 @@ export function useMessages() {
     }
   }, []);
 
-  // In useMessages.js, update selectConversation:
-
-// Select a conversation
-const selectConversation = useCallback(async (conversation) => {
-    // ✅ Allow deselecting (for mobile back button)
+  // Select a conversation
+  const selectConversation = useCallback(async (conversation) => {
+    // Allow deselecting (for mobile back button)
     if (!conversation) {
       setActiveConversation(null);
       setMessages([]);
@@ -282,6 +282,7 @@ const selectConversation = useCallback(async (conversation) => {
     typingUsers,
     unreadCount,
     isConnected,
+    conversationsLoaded,  // ✅ NEW: Export this
     selectConversation,
     sendMessage,
     sendTyping,

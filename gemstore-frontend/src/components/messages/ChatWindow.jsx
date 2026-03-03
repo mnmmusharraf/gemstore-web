@@ -36,6 +36,15 @@ function ChatWindow({
   const messagesContainerRef = useRef(null);
   const currentUserId = getCurrentUserId();
 
+  // ✅ Debug: Log what ChatWindow receives
+  useEffect(() => {
+    console.log('🪟 ChatWindow received:', {
+      conversationPartner: conversation?.partnerDisplayName,
+      pendingListingTitle: pendingListing?.title,
+      pendingMessageLength: pendingMessage?.length,
+    });
+  }, [conversation, pendingListing, pendingMessage]);
+
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
@@ -49,6 +58,7 @@ function ChatWindow({
   }, [conversation?.partnerId, messages.length]);
 
   const handleSend = async (content) => {
+    console.log('📤 Sending message:', { content, hasPendingListing: !!pendingListing });
     if (pendingListing) {
       await onSendMessage(content, 'LISTING', pendingListing.id);
       onClearPendingListing?.();
@@ -58,10 +68,12 @@ function ChatWindow({
     }
   };
 
-  // ✅ Fixed: Use stable values for key - no Date.now()
+  // Key for MessageInput - changes when pendingMessage changes
   const inputKey = pendingMessage 
     ? `inquiry-${conversation?.partnerId}-${pendingListing?.id || 'listing'}` 
     : `normal-${conversation?.partnerId || 'none'}`;
+
+  console.log('🔑 MessageInput key:', inputKey);
 
   return (
     <div className="chat-window">
@@ -159,8 +171,8 @@ function ChatWindow({
         )}
       </div>
 
-      {/* Listing Preview Above Input */}
-      {pendingListing && (
+      {/* ✅ Listing Preview Above Input */}
+      {pendingListing ? (
         <div className="listing-preview-bar">
           <div className="listing-preview-content">
             {pendingListing.imageUrl && (
@@ -190,9 +202,11 @@ function ChatWindow({
             </svg>
           </button>
         </div>
+      ) : (
+        <>{/* Debug: No pending listing */}</>
       )}
 
-      {/* Message Input with key to force remount */}
+      {/* Message Input */}
       <MessageInput 
         key={inputKey}
         onSendMessage={handleSend}
@@ -200,7 +214,7 @@ function ChatWindow({
         disabled={sending || !isConnected}
         sending={sending}
         placeholder={pendingListing ? `Ask about ${pendingListing.title}...` : 'Type a message...'}
-        defaultMessage={pendingMessage}
+        defaultMessage={pendingMessage || ''}
         onMessageChange={onClearPendingMessage}
       />
     </div>

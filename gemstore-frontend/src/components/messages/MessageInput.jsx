@@ -14,7 +14,7 @@ function MessageInput({
   const [message, setMessage] = useState(defaultMessage);
   const textareaRef = useRef(null);
 
-  // Focus and resize on mount if there's a default message
+  // ✅ Focus and resize when defaultMessage changes (component remounts via key)
   useEffect(() => {
     if (defaultMessage && textareaRef.current) {
       textareaRef.current.focus();
@@ -26,7 +26,7 @@ function MessageInput({
         }
       });
     }
-  }, []); // Only on mount
+  }, [defaultMessage]); // ✅ Added defaultMessage to dependencies
 
   const handleSubmit = async (e) => {
     e?.preventDefault();

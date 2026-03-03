@@ -835,8 +835,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 0.75rem 1rem;
-  background: var(--bg-subtle);
-  border-top: 1px solid var(--border-soft);
+  background: var(--bg-elevated, #2a2a2a);
+  border-top: 1px solid var(--border-soft, #333);
   gap: 0.75rem;
 }
 
@@ -866,7 +866,7 @@
 
 .listing-preview-label {
   font-size: 0.7rem;
-  color: var(--text-muted);
+  color: var(--text-muted, #888);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -874,7 +874,7 @@
 .listing-preview-title {
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--text-main);
+  color: var(--text-main, #fff);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -882,7 +882,7 @@
 
 .listing-preview-price {
   font-size: 0.8rem;
-  color: var(--primary);
+  color: var(--primary, #4ade80);
   font-weight: 600;
 }
 
@@ -892,7 +892,7 @@
   padding: 0.5rem;
   border-radius: 50%;
   cursor: pointer;
-  color: var(--text-muted);
+  color: var(--text-muted, #888);
   transition: all 0.15s ease;
   display: flex;
   align-items: center;
@@ -901,8 +901,8 @@
 }
 
 .listing-preview-close:hover {
-  background: var(--bg-elevated);
-  color: var(--text-main);
+  background: var(--bg-subtle, #333);
+  color: var(--text-main, #fff);
 }
 
 .messages-spacer {

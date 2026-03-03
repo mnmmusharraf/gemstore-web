@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useMemo } from 'react';
+import React, { useEffect, useState } from 'react';
 import ConversationList from './ConversationList';
 import ChatWindow from './ChatWindow';
 import EmptyState from './EmptyState';
@@ -19,113 +19,101 @@ function MessagesSection({
     sending,
     typingUsers,
     isConnected,
+    conversationsLoaded,
     selectConversation,
     sendMessage,
     sendTyping,
   } = useMessages();
 
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-  
-  // Track which inquiry we've processed
-  const processedInquiryRef = useRef(null);
-  const inquiryProcessingRef = useRef(false);
-
-  // ✅ Derive pending listing and message from inquiryData (no state needed)
-  const pendingListing = useMemo(() => {
-    if (!inquiryData?.listing) return null;
-    return inquiryData.listing;
-  }, [inquiryData]);
-
-  const pendingMessage = useMemo(() => {
-    if (!inquiryData?.listing) return '';
-    const listing = inquiryData.listing;
-    return `Hi! I'm interested in your listing:\n\n💎 ${listing.title}\n💰 ${listing.formattedPrice || `${listing.currency} ${listing.price}`}\n\nIs this still available?`;
-  }, [inquiryData]);
+  const [pendingListing, setPendingListing] = useState(null);
+  const [pendingMessage, setPendingMessage] = useState('');
+  const [processedInquiryKey, setProcessedInquiryKey] = useState(null);
 
   // Clear unread count when component mounts
   useEffect(() => {
     onMessagesRead?.();
   }, [onMessagesRead]);
 
-  // ✅ Process inquiry data - select/create conversation
+  // Process inquiry data
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    if (!inquiryData || !inquiryData.sellerId || loading) return;
-    
-    const inquiryKey = `${inquiryData.sellerId}-${inquiryData.listing?.id || 'none'}`;
-    
-    // Don't process the same inquiry twice
-    if (processedInquiryRef.current === inquiryKey || inquiryProcessingRef.current) {
+    if (!inquiryData || !inquiryData.sellerId || !conversationsLoaded) {
       return;
     }
 
-    inquiryProcessingRef.current = true;
-    processedInquiryRef.current = inquiryKey;
-
-    const { sellerId, sellerName, sellerAvatar } = inquiryData;
-
-    // Use setTimeout to avoid synchronous setState warning
-    setTimeout(() => {
-      // Find existing conversation
-      const existingConversation = conversations.find(
-        (c) => Number(c.partnerId) === Number(sellerId)
-      );
-
-      if (existingConversation) {
-        selectConversation(existingConversation);
-      } else {
-        // Create new temporary conversation
-        selectConversation({
-          partnerId: sellerId,
-          partnerUsername: sellerName,
-          partnerDisplayName: sellerName,
-          partnerAvatarUrl: sellerAvatar,
-          lastMessage: null,
-          lastMessageAt: new Date().toISOString(),
-          unreadCount: 0,
-          isNew: true,
-        });
-      }
-
-      inquiryProcessingRef.current = false;
-      
-      // Clear parent's inquiry data after conversation is selected
-      onInquiryHandled?.();
-    }, 0);
-
-  }, [inquiryData, loading, conversations, selectConversation, onInquiryHandled]);
-
-  // Reset processed ref when component receives null inquiryData
-  useEffect(() => {
-    if (!inquiryData) {
-      const timer = setTimeout(() => {
-        processedInquiryRef.current = null;
-      }, 500);
-      return () => clearTimeout(timer);
+    const inquiryKey = `${inquiryData.sellerId}-${inquiryData.listing?.id || 'none'}`;
+    
+    if (processedInquiryKey === inquiryKey) {
+      return;
     }
-  }, [inquiryData]);
 
-  // Handle resize for mobile
+    console.log('🚀 Processing inquiry:', inquiryKey);
+
+    const { sellerId, sellerName, sellerAvatar, listing } = inquiryData;
+
+    // Set listing and message
+    if (listing) {
+      setPendingListing(listing);
+      setPendingMessage(
+        `Hi! I'm interested in your listing:\n\n💎 ${listing.title}\n💰 ${listing.formattedPrice || `${listing.currency} ${listing.price}`}\n\nIs this still available?`
+      );
+    }
+
+    setProcessedInquiryKey(inquiryKey);
+
+    // Select conversation
+    const existingConversation = conversations.find(
+      (c) => Number(c.partnerId) === Number(sellerId)
+    );
+
+    if (existingConversation) {
+      selectConversation(existingConversation);
+    } else {
+      selectConversation({
+        partnerId: sellerId,
+        partnerUsername: sellerName,
+        partnerDisplayName: sellerName,
+        partnerAvatarUrl: sellerAvatar,
+        lastMessage: null,
+        lastMessageAt: new Date().toISOString(),
+        unreadCount: 0,
+        isNew: true,
+      });
+    }
+
+    // Clear parent's inquiry data
+    onInquiryHandled?.();
+
+  }, [inquiryData, conversationsLoaded, conversations]);
+
+  // Reset when inquiry data clears
   useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
+    if (!inquiryData && processedInquiryKey) {
+      setProcessedInquiryKey(null);
+    }
+  }, [inquiryData, processedInquiryKey]);
+
+  // Handle resize
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Handlers
   const handleClearPendingListing = () => {
-    // This will clear via onInquiryHandled
-    onInquiryHandled?.();
+    setPendingListing(null);
+    setPendingMessage('');
   };
 
   const handleClearPendingMessage = () => {
-    onInquiryHandled?.();
+    setPendingMessage('');
   };
 
   const handleBack = () => {
     selectConversation(null);
-    onInquiryHandled?.();
+    setPendingListing(null);
+    setPendingMessage('');
   };
 
   const handleProfileClick = () => {
@@ -136,7 +124,8 @@ function MessagesSection({
 
   const handleSelectConversation = (conv) => {
     selectConversation(conv);
-    onInquiryHandled?.();
+    setPendingListing(null);
+    setPendingMessage('');
   };
 
   const isPartnerTyping = activeConversation
