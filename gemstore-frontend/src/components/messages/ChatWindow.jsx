@@ -36,15 +36,6 @@ function ChatWindow({
   const messagesContainerRef = useRef(null);
   const currentUserId = getCurrentUserId();
 
-  // ✅ Debug: Log what ChatWindow receives
-  useEffect(() => {
-    console.log('🪟 ChatWindow received:', {
-      conversationPartner: conversation?.partnerDisplayName,
-      pendingListingTitle: pendingListing?.title,
-      pendingMessageLength: pendingMessage?.length,
-    });
-  }, [conversation, pendingListing, pendingMessage]);
-
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
@@ -57,10 +48,24 @@ function ChatWindow({
     }
   }, [conversation?.partnerId, messages.length]);
 
+  // ✅ Send message with embedded listing data
   const handleSend = async (content) => {
-    console.log('📤 Sending message:', { content, hasPendingListing: !!pendingListing });
     if (pendingListing) {
-      await onSendMessage(content, 'LISTING', pendingListing.id);
+      // Embed listing data as a special format in the message
+      // Format: [LISTING:json_data]message_text
+      const listingData = {
+        id: pendingListing.id,
+        title: pendingListing.title,
+        price: pendingListing.price,
+        currency: pendingListing.currency,
+        formattedPrice: pendingListing.formattedPrice,
+        imageUrl: pendingListing.imageUrl,
+        gemstoneType: pendingListing.gemstoneType,
+      };
+      
+      const embeddedContent = `[LISTING:${JSON.stringify(listingData)}]${content}`;
+      
+      await onSendMessage(embeddedContent, 'LISTING', pendingListing.id);
       onClearPendingListing?.();
       onClearPendingMessage?.();
     } else {
@@ -68,12 +73,10 @@ function ChatWindow({
     }
   };
 
-  // Key for MessageInput - changes when pendingMessage changes
+  // Key for MessageInput
   const inputKey = pendingMessage 
     ? `inquiry-${conversation?.partnerId}-${pendingListing?.id || 'listing'}` 
     : `normal-${conversation?.partnerId || 'none'}`;
-
-  console.log('🔑 MessageInput key:', inputKey);
 
   return (
     <div className="chat-window">
@@ -171,16 +174,18 @@ function ChatWindow({
         )}
       </div>
 
-      {/* ✅ Listing Preview Above Input */}
-      {pendingListing ? (
+      {/* Listing Preview Above Input */}
+      {pendingListing && (
         <div className="listing-preview-bar">
           <div className="listing-preview-content">
-            {pendingListing.imageUrl && (
+            {pendingListing.imageUrl ? (
               <img 
                 src={pendingListing.imageUrl} 
                 alt={pendingListing.title}
                 className="listing-preview-image"
               />
+            ) : (
+              <div className="listing-preview-placeholder">💎</div>
             )}
             <div className="listing-preview-info">
               <span className="listing-preview-label">Asking about:</span>
@@ -202,8 +207,6 @@ function ChatWindow({
             </svg>
           </button>
         </div>
-      ) : (
-        <>{/* Debug: No pending listing */}</>
       )}
 
       {/* Message Input */}

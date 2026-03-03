@@ -170,7 +170,7 @@ const FeedCard = memo(function FeedCard({
     }
   };
 
-  // ✅ INQUIRE - Opens conversation with seller (NO TOAST)
+  // ✅ INQUIRE - Opens conversation with seller
   const handleInquire = (e) => {
     e.stopPropagation();
     
@@ -180,7 +180,11 @@ const FeedCard = memo(function FeedCard({
       return;
     }
 
-    // Just call onInquire - no toast, no fallback
+    // ✅ Get the first image URL properly
+    const firstImageUrl = images[0]?.imageUrl || primaryImageUrl || imageUrl || null;
+    
+    console.log('📷 FeedCard sending inquiry with imageUrl:', firstImageUrl);
+
     if (typeof onInquire === 'function') {
       onInquire({
         sellerId,
@@ -192,7 +196,7 @@ const FeedCard = memo(function FeedCard({
           price,
           currency,
           formattedPrice,
-          imageUrl: images[0]?.imageUrl || primaryImageUrl || imageUrl,
+          imageUrl: firstImageUrl,
           gemstoneType,
         }
       });

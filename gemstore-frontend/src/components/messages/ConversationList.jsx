@@ -2,6 +2,36 @@ import React from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import './MessagesSection.css';
 
+// ✅ Helper to clean message preview (removes listing JSON)
+const getPreviewText = (message) => {
+  if (!message?.content) return 'No messages yet';
+  
+  const content = message.content;
+  
+  // Check for listing message format: [LISTING:{...}]text
+  if (content.startsWith('[LISTING:')) {
+    const listingMatch = content.match(/^\[LISTING:(.*?)\](.*)$/s);
+    
+    if (listingMatch) {
+      try {
+        const listing = JSON.parse(listingMatch[1]);
+        const text = listingMatch[2]?.trim();
+        
+        // Return a clean preview
+        if (text) {
+          return `💎 ${listing.title} - "${text}"`;
+        }
+        return `💎 Inquiry: ${listing.title}`;
+      } catch {
+        return '💎 Listing inquiry';
+      }
+    }
+  }
+  
+  // Return original content for normal messages
+  return content;
+};
+
 function ConversationList({ 
   conversations, 
   activeConversation, 
@@ -85,8 +115,9 @@ function ConversationList({
                 </div>
                 <div className="conversation-preview">
                   <span className="preview-text">
+                    {/* ✅ Show "You:" prefix and clean the preview text */}
                     {conversation.lastMessage?.isOwnMessage && 'You: '}
-                    {conversation.lastMessage?.content || 'No messages yet'}
+                    {getPreviewText(conversation.lastMessage)}
                   </span>
                   {conversation.unreadCount > 0 && (
                     <span className="unread-badge">{conversation.unreadCount}</span>

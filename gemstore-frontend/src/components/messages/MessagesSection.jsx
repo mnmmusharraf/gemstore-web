@@ -55,9 +55,8 @@ function MessagesSection({
     // Set listing and message
     if (listing) {
       setPendingListing(listing);
-      setPendingMessage(
-        `Hi! I'm interested in your listing:\n\n💎 ${listing.title}\n💰 ${listing.formattedPrice || `${listing.currency} ${listing.price}`}\n\nIs this still available?`
-      );
+      // ��� Simplified message - listing info will be shown in the card
+      setPendingMessage('Is this still available?');
     }
 
     setProcessedInquiryKey(inquiryKey);
@@ -100,6 +99,16 @@ function MessagesSection({
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  // ✅ Enhanced send message with listing data
+  const handleSendMessage = async (content, messageType = 'TEXT', listingId = null) => {
+    // If we have a pending listing, include it in the message
+    if (pendingListing && messageType === 'LISTING') {
+      const result = await sendMessage(content, 'LISTING', listingId, pendingListing);
+      return result;
+    }
+    return sendMessage(content, messageType, listingId);
+  };
 
   const handleClearPendingListing = () => {
     setPendingListing(null);
@@ -149,7 +158,7 @@ function MessagesSection({
           sending={sending}
           isTyping={isPartnerTyping}
           isConnected={isConnected}
-          onSendMessage={sendMessage}
+          onSendMessage={handleSendMessage}
           onTyping={sendTyping}
           onBack={isMobile ? handleBack : null}
           onProfileClick={handleProfileClick}

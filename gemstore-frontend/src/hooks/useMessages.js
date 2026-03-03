@@ -7,13 +7,13 @@ export function useMessages() {
   const [conversations, setConversations] = useState([]);
   const [activeConversation, setActiveConversation] = useState(null);
   const [messages, setMessages] = useState([]);
-  const [loading, setLoading] = useState(true);  // ✅ Start as true
+  const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState(null);
   const [typingUsers, setTypingUsers] = useState({});
   const [unreadCount, setUnreadCount] = useState(0);
   const [isConnected, setIsConnected] = useState(false);
-  const [conversationsLoaded, setConversationsLoaded] = useState(false);  // ✅ NEW
+  const [conversationsLoaded, setConversationsLoaded] = useState(false);
   
   const typingTimeoutRef = useRef(null);
   const activeConversationRef = useRef(activeConversation);
@@ -37,7 +37,7 @@ export function useMessages() {
       console.error('Error loading conversations:', err);
     } finally {
       setLoading(false);
-      setConversationsLoaded(true);  // ✅ Mark as loaded
+      setConversationsLoaded(true);
     }
   }, []);
 
@@ -82,6 +82,7 @@ export function useMessages() {
           receiverId: data.receiverId,
           content: data.content,
           messageType: data.messageType,
+          listingPreview: data.listingPreview,  // ✅ Include listing preview
           status: data.status,
           createdAt: data.timestamp,
           isOwnMessage: false,
@@ -177,7 +178,6 @@ export function useMessages() {
 
   // Select a conversation
   const selectConversation = useCallback(async (conversation) => {
-    // Allow deselecting (for mobile back button)
     if (!conversation) {
       setActiveConversation(null);
       setMessages([]);
@@ -202,13 +202,14 @@ export function useMessages() {
     }
   }, [loadMessages]);
   
-  // Send a message
-  const sendMessage = useCallback(async (content, messageType = 'TEXT', listingId = null) => {
+  // ✅ Send a message - Updated to include listing preview
+  const sendMessage = useCallback(async (content, messageType = 'TEXT', listingId = null, listingPreview = null) => {
     if (!activeConversation || !content.trim()) return;
 
     try {
       setSending(true);
       setError(null);
+      
       const response = await messageService.sendMessage(
         activeConversation.partnerId,
         content,
@@ -217,8 +218,15 @@ export function useMessages() {
       );
 
       if (response.success) {
+        // ✅ Add listing preview to the message for local display
+        const messageWithPreview = {
+          ...response.data,
+          listingPreview: listingPreview,
+          messageType: messageType,
+        };
+        
         // Add message to list
-        setMessages(prev => [...prev, response.data]);
+        setMessages(prev => [...prev, messageWithPreview]);
         
         // Update conversation in list
         setConversations(prev => {
@@ -282,7 +290,7 @@ export function useMessages() {
     typingUsers,
     unreadCount,
     isConnected,
-    conversationsLoaded,  // ✅ NEW: Export this
+    conversationsLoaded,
     selectConversation,
     sendMessage,
     sendTyping,

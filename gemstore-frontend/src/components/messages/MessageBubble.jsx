@@ -1,10 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { format } from 'date-fns';
 import './MessagesSection.css';
 
 function MessageBubble({ message, showAvatar, isLast, currentUserId }) {
-  // ✅ FIX: Properly check if message is from current user
-  // Handle both number and string comparison
   const isOwn = 
     message.isOwnMessage === true || 
     message.isOwnMessage === 'true' ||
@@ -35,6 +33,34 @@ function MessageBubble({ message, showAvatar, isLast, currentUserId }) {
     }
   };
 
+  // ✅ Parse listing data from message content
+  const { listingData, textContent } = useMemo(() => {
+    const content = message.content || '';
+    
+    // Check for embedded listing format: [LISTING:{json}]text
+    const listingMatch = content.match(/^\[LISTING:(.*?)\](.*)$/s);
+    
+    if (listingMatch) {
+      try {
+        const listing = JSON.parse(listingMatch[1]);
+        const text = listingMatch[2].trim();
+        return { listingData: listing, textContent: text };
+      } catch (e) {
+        console.error('Failed to parse listing data:', e);
+        return { listingData: null, textContent: content };
+      }
+    }
+    
+    // Check if message has listingPreview from props (for real-time messages)
+    if (message.listingPreview) {
+      return { listingData: message.listingPreview, textContent: content };
+    }
+    
+    return { listingData: null, textContent: content };
+  }, [message.content, message.listingPreview]);
+
+  const hasListing = !!listingData;
+
   return (
     <div className={`message-wrapper ${isOwn ? 'own' : 'other'} ${isLast ? 'last' : ''}`}>
       {/* Show avatar for other user's messages */}
@@ -54,22 +80,37 @@ function MessageBubble({ message, showAvatar, isLast, currentUserId }) {
       {/* Spacer when no avatar but it's other user's message */}
       {!isOwn && !showAvatar && <div className="message-avatar-spacer" />}
 
-      <div className={`message-bubble ${isOwn ? 'own' : 'other'}`}>
-        {/* Listing Preview (if messageType is LISTING) */}
-        {message.messageType === 'LISTING' && message.listingPreview && (
-          <div className="message-listing-preview">
-            <img src={message.listingPreview.imageUrl} alt={message.listingPreview.title} />
-            <div className="listing-info">
-              <span className="listing-title">{message.listingPreview.title}</span>
-              <span className="listing-price">
-                {message.listingPreview.currency} {message.listingPreview.price}
+      <div className={`message-bubble ${isOwn ? 'own' : 'other'} ${hasListing ? 'has-listing' : ''}`}>
+        {/* ✅ Rich Listing Card Preview */}
+        {hasListing && (
+          <div className="message-listing-card">
+            {listingData.imageUrl && (
+              <div className="message-listing-image">
+                <img 
+                  src={listingData.imageUrl} 
+                  alt={listingData.title}
+                  onError={(e) => {
+                    e.target.parentElement.style.display = 'none';
+                  }}
+                />
+              </div>
+            )}
+            <div className="message-listing-details">
+              {listingData.gemstoneType && (
+                <span className="message-listing-type">{listingData.gemstoneType}</span>
+              )}
+              <span className="message-listing-title">
+                {listingData.title}
+              </span>
+              <span className="message-listing-price">
+                {listingData.formattedPrice || `${listingData.currency} ${listingData.price}`}
               </span>
             </div>
           </div>
         )}
 
         {/* Message Content */}
-        <p className="message-content">{message.content}</p>
+        <p className="message-content">{textContent || 'Is this still available?'}</p>
 
         {/* Message Footer */}
         <div className="message-footer">
