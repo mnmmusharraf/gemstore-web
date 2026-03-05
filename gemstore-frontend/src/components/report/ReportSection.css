@@ -1,2 +1,157 @@
-@import "../../styles/theme.css";
-/* Uses shared form/button styles from HomePage.css */
+/* ==================== SECTION ==================== */
+.report-section {
+  padding: 1.5rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.report-section-header {
+  margin-bottom: 1.5rem;
+}
+
+.report-section-header h2 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.report-section-subtitle {
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* ==================== EMPTY STATE ==================== */
+.report-empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--text-muted);
+}
+
+.report-empty-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.report-empty h3 {
+  margin: 0 0 0.5rem 0;
+  color: var(--text-main);
+}
+
+.report-empty p {
+  margin: 0;
+}
+
+/* ==================== ERROR ==================== */
+.report-error {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-muted);
+}
+
+.report-error button {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* ==================== LIST ==================== */
+.report-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* ==================== CARD ==================== */
+.report-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.report-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: var(--bg-subtle);
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.report-type {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+.report-status {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  text-transform: uppercase;
+}
+
+.status-pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-reviewing {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.status-resolved {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-dismissed {
+  background: var(--bg-subtle);
+  color: var(--text-muted);
+}
+
+.report-card-body {
+  padding: 1rem;
+}
+
+.report-reason,
+.report-target-info,
+.report-description-text {
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--text-main);
+}
+
+.report-reason strong,
+.report-target-info strong,
+.report-description-text strong {
+  color: var(--text-muted);
+  font-weight: 500;
+  margin-right: 0.5rem;
+}
+
+.report-card-footer {
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--border-soft);
+}
+
+.report-date {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 768px) {
+  .report-section {
+    padding: 1rem;
+  }
+}
