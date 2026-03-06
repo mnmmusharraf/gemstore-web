@@ -10,6 +10,7 @@ import ReportSection from "../../components/report/ReportSection";
 import PriceEstimatorForm from "../../components/estimator/PriceEstimatorForm";
 import ProfilePage from "../ProfilePage/ProfilePage";
 import PublicProfilePage from "../PublicProfilePage/PublicProfilePage";
+import ListingEditPage from "../ListingEditPage/ListingEditPage";
 import NotificationsSection from "../../components/notifications/NotificationsSection";
 import PeopleSection from "../../components/people/PeopleSection";
 import ShareToChatModal from "../../components/messages/ShareToChatModal";
@@ -22,6 +23,9 @@ function HomePage({ currentUser, onLogout }) {
   const [tabCallbacks, setTabCallbacks] = useState(null);
   const [inquiryData, setInquiryData] = useState(null);
   const [shareData, setShareData] = useState(null);
+  
+  // ✅ NEW: State for editing listing
+  const [editingListingId, setEditingListingId] = useState(null);
 
   const notificationProps = useMemo(() => {
     if (!tabCallbacks) return {};
@@ -48,6 +52,19 @@ function HomePage({ currentUser, onLogout }) {
   const handleBackFromPublicProfile = () => {
     setActiveTab("feed");
     setViewingUserId(null);
+  };
+
+  // ✅ NEW: Handle edit listing navigation
+  const handleEditListing = (listing) => {
+    console.log("Editing listing:", listing);
+    setEditingListingId(listing.id);
+    setActiveTab("editListing");
+  };
+
+  // ✅ NEW: Handle back from edit listing
+  const handleBackFromEditListing = () => {
+    setEditingListingId(null);
+    setActiveTab("profile");
   };
 
   // ===============================
@@ -156,7 +173,7 @@ function HomePage({ currentUser, onLogout }) {
 
   const mainRootClass =
     "main-root" +
-    (activeTab === "profile" || activeTab === "publicProfile"
+    (activeTab === "profile" || activeTab === "publicProfile" || activeTab === "editListing"
       ? " main-root--profile"
       : "");
 
@@ -164,6 +181,13 @@ function HomePage({ currentUser, onLogout }) {
     "profile",
     "publicProfile",
     "messages",
+    "editListing", // ✅ Hide rightbar on edit page
+  ].includes(activeTab);
+
+  const showTopbar = ![
+    "profile",
+    "publicProfile",
+    "editListing", // ✅ Hide topbar on edit page
   ].includes(activeTab);
 
   // ===============================
@@ -177,6 +201,7 @@ function HomePage({ currentUser, onLogout }) {
         onChangeTab={(tab, api) => {
           setActiveTab(tab);
           setViewingUserId(null);
+          setEditingListingId(null); // ✅ Clear editing state
           if (api) setTabCallbacks(api);
         }}
         currentUser={currentUser}
@@ -184,10 +209,7 @@ function HomePage({ currentUser, onLogout }) {
       />
 
       <main className="main-content">
-        {activeTab !== "profile" &&
-          activeTab !== "publicProfile" && (
-            <Topbar activeTab={activeTab} />
-          )}
+        {showTopbar && <Topbar activeTab={activeTab} />}
 
         {activeTab === "feed" && (
           <FeedSection
@@ -225,18 +247,27 @@ function HomePage({ currentUser, onLogout }) {
               console.log("Profile updated:", updatedUser);
             }}
             onUserClick={handleSellerClick}
+            onEditListing={handleEditListing} // ✅ Pass edit handler
           />
         )}
 
-        {activeTab === "publicProfile" &&
-          viewingUserId && (
-            <PublicProfilePage
-              currentUser={currentUser}
-              userId={viewingUserId}
-              onBack={handleBackFromPublicProfile}
-              onMessage={handleMessageFromProfile}  // ✅ ADDED HERE
-            />
-          )}
+        {activeTab === "publicProfile" && viewingUserId && (
+          <PublicProfilePage
+            currentUser={currentUser}
+            userId={viewingUserId}
+            onBack={handleBackFromPublicProfile}
+            onMessage={handleMessageFromProfile}
+          />
+        )}
+
+        {/* ✅ NEW: Edit Listing Tab */}
+        {activeTab === "editListing" && editingListingId && (
+          <ListingEditPage
+            currentUser={currentUser}
+            listingId={editingListingId}
+            onBack={handleBackFromEditListing}
+          />
+        )}
 
         {activeTab === "notifications" && (
           <NotificationsSection
@@ -259,9 +290,7 @@ function HomePage({ currentUser, onLogout }) {
             </div>
             <div className="estimator-page-content">
               <PriceEstimatorForm
-                onCreateListing={
-                  handleCreateListingFromEstimate
-                }
+                onCreateListing={handleCreateListingFromEstimate}
                 fullPage={true}
               />
             </div>
@@ -278,9 +307,7 @@ function HomePage({ currentUser, onLogout }) {
               </h3>
               <button
                 className="expand-btn"
-                onClick={() =>
-                  setActiveTab("estimator")
-                }
+                onClick={() => setActiveTab("estimator")}
                 title="Open full estimator"
               >
                 ↗
@@ -288,9 +315,7 @@ function HomePage({ currentUser, onLogout }) {
             </div>
             <PriceEstimatorForm
               compact={true}
-              onCreateListing={
-                handleCreateListingFromEstimate
-              }
+              onCreateListing={handleCreateListingFromEstimate}
             />
           </div>
         </Rightbar>
