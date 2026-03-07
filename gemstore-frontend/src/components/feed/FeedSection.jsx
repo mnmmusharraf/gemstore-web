@@ -4,21 +4,39 @@ import FeedCard from './FeedCard';
 import FeedSkeleton from './FeedSkeleton';
 import './FeedSection.css';
 
-function FeedSection({ onSellerClick, onInquire, onShareToChat }) {  // ✅ Add onInquire to props
+function FeedSection({ onSellerClick, onInquire, onShareToChat, searchFilters, searchQuery }) {
   const {
     listings = [],
     loading,
     error,
     hasMore,
+    totalElements,
     loadMore,
     refresh,
     toggleLike,
     toggleFavorite,
+    updateFilters,
+    clearFilters,
     isAuthenticated,
   } = useFeed();
 
   const observerRef = useRef();
   const lastCardRef = useRef();
+  const prevFiltersRef = useRef(null);
+
+  // Sync search filters from Topbar into useFeed hook
+  useEffect(() => {
+    const filtersStr = JSON.stringify(searchFilters);
+    if (filtersStr !== JSON.stringify(prevFiltersRef.current)) {
+      prevFiltersRef.current = searchFilters;
+
+      if (searchFilters && Object.keys(searchFilters).length > 0) {
+        updateFilters(searchFilters);
+      } else {
+        clearFilters();
+      }
+    }
+  }, [searchFilters, updateFilters, clearFilters]);
 
   // Infinite scroll
   useEffect(() => {
@@ -48,6 +66,8 @@ function FeedSection({ onSellerClick, onInquire, onShareToChat }) {  // ✅ Add 
     };
   }, [loading, hasMore, loadMore]);
 
+  const isSearching = searchFilters && Object.keys(searchFilters).length > 0;
+
   // Error state
   if (error && (!listings || listings.length === 0)) {
     return (
@@ -67,8 +87,22 @@ function FeedSection({ onSellerClick, onInquire, onShareToChat }) {  // ✅ Add 
       <div className="feed-container">
         <div className="feed-empty">
           <span>💎</span>
-          <h3>No gems found</h3>
-          <p>Be the first to list a gemstone!</p>
+          {isSearching ? (
+            <>
+              <h3>No results found</h3>
+              <p>
+                {searchQuery
+                  ? <>No gemstones match "<strong>{searchQuery}</strong>". Try different keywords or filters.</>
+                  : "No gemstones match your filters. Try adjusting them."
+                }
+              </p>
+            </>
+          ) : (
+            <>
+              <h3>No gems found</h3>
+              <p>Be the first to list a gemstone!</p>
+            </>
+          )}
         </div>
       </div>
     );
@@ -76,6 +110,16 @@ function FeedSection({ onSellerClick, onInquire, onShareToChat }) {  // ✅ Add 
 
   return (
     <div className="feed-container">
+      {/* Search results info */}
+      {isSearching && listings.length > 0 && (
+        <div className="feed-search-info">
+          <span>
+            {totalElements} result{totalElements !== 1 ? "s" : ""}
+            {searchQuery && <> for "<strong>{searchQuery}</strong>"</>}
+          </span>
+        </div>
+      )}
+
       {listings && listings.map((listing, index) => (
         <div
           key={listing.id}
@@ -85,7 +129,7 @@ function FeedSection({ onSellerClick, onInquire, onShareToChat }) {  // ✅ Add 
             listing={listing}
             onLike={toggleLike}
             onSave={toggleFavorite}
-            onInquire={onInquire}  // ✅ ADD THIS LINE
+            onInquire={onInquire}
             onShareToChat={onShareToChat}
             isAuthenticated={isAuthenticated}
             onSellerClick={onSellerClick}
@@ -102,7 +146,7 @@ function FeedSection({ onSellerClick, onInquire, onShareToChat }) {  // ✅ Add 
 
       {!hasMore && listings && listings.length > 0 && (
         <div className="feed-end">
-          <p>You've seen all listings ✨</p>
+          <p>{isSearching ? "End of results ✨" : "You've seen all listings ✨"}</p>
         </div>
       )}
     </div>
