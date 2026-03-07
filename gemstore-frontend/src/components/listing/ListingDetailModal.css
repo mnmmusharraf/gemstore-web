@@ -580,3 +580,49 @@
 [data-theme="dark"] .listing-modal-options-menu button.danger:hover {
   background: rgba(231, 76, 60, 0.2);
 }
+
+/* ==================== SHARE MENU ==================== */
+.listing-modal-actions .share-btn-wrapper {
+  position: relative;
+}
+
+.listing-modal-actions .share-menu {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 170px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  z-index: 110;
+  overflow: hidden;
+}
+
+.listing-modal-actions .share-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 16px;
+  background: none;
+  border: none;
+  color: var(--text-main);
+  font-size: 0.85rem;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+}
+
+.listing-modal-actions .share-menu-item:hover {
+  background: var(--sidebar-hover-bg);
+}
+
+.listing-modal-actions .share-menu-item:not(:last-child) {
+  border-bottom: 1px solid var(--border-soft);
+}
+
+[data-theme="dark"] .listing-modal-actions .share-menu {
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}

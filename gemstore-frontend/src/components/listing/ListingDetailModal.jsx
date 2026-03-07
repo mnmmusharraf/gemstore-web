@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { API_BASE_URL, getAuthHeaders, handleResponse } from '../../api/config';
 import LoadingSpinner from '../common/LoadingSpinner';
+import ReportModal from '../report/ReportModal';
 import './ListingDetailModal.css';
 
 const ListingDetailModal = ({ 
@@ -13,6 +14,8 @@ const ListingDetailModal = ({
   onDelete,
   onLike,
   onSave,
+  onShareToChat,
+  onInquire,
 }) => {
   const [listing, setListing] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -22,6 +25,8 @@ const ListingDetailModal = ({
   const [likesCount, setLikesCount] = useState(0);
   const [showOptions, setShowOptions] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [showShareMenu, setShowShareMenu] = useState(false);
 
   // Helper: Extract display value from field (handles objects with name property)
   const getValue = (field) => {
@@ -38,6 +43,8 @@ const ListingDetailModal = ({
       fetchListing();
       setCurrentImageIndex(0);
       setShowOptions(false);
+      setShowReportModal(false);
+      setShowShareMenu(false);
     }
   }, [isOpen, listingId]);
 
@@ -56,11 +63,9 @@ const ListingDetailModal = ({
       setIsSaved(listingData.isFavorited || false);
       setLikesCount(listingData.likesCount || 0);
       
-      // Check ownership with multiple possible field names
       const sellerId = listingData.sellerId || listingData.seller?.id || listingData.userId;
       const userId = currentUser?.id;
       
-      // Compare as strings to handle type mismatches
       const ownershipCheck = sellerId && userId && String(sellerId) === String(userId);
       setIsOwner(ownershipCheck);
     } catch (error) {
@@ -74,7 +79,15 @@ const ListingDetailModal = ({
   // Close on escape key
   useEffect(() => {
     const handleEsc = (e) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') {
+        if (showReportModal) {
+          setShowReportModal(false);
+        } else if (showShareMenu) {
+          setShowShareMenu(false);
+        } else {
+          onClose();
+        }
+      }
     };
     if (isOpen) {
       document.addEventListener('keydown', handleEsc);
@@ -84,7 +97,7 @@ const ListingDetailModal = ({
       document.removeEventListener('keydown', handleEsc);
       document.body.style.overflow = '';
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, showReportModal, showShareMenu]);
 
   if (!isOpen) return null;
 
@@ -111,6 +124,39 @@ const ListingDetailModal = ({
     e?.stopPropagation();
     setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
   };
+
+  // Format helpers
+  const formatPrice = (amount, currency = 'LKR') => {
+    if (!amount) return null;
+    if (currency === 'LKR') {
+      return `Rs. ${Number(amount).toLocaleString('en-LK')}`;
+    }
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency,
+      minimumFractionDigits: 0,
+    }).format(amount);
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  };
+
+  const getDimensions = () => {
+    if (!listing) return null;
+    const dims = [listing.lengthMm, listing.widthMm, listing.depthMm].filter(Boolean);
+    if (dims.length === 0) return null;
+    return dims.join(' × ') + ' mm';
+  };
+
+  const formattedPrice = formatPrice(listing?.price, listing?.currency);
+
+  // ===== ACTION HANDLERS =====
 
   const handleLike = async () => {
     if (!currentUser) {
@@ -152,7 +198,6 @@ const ListingDetailModal = ({
     if (onEdit) onEdit(listing);
   };
 
-  // ✅ Updated Delete Handler - closes modal and triggers refresh
   const handleDelete = () => {
     setShowOptions(false);
     if (onDelete) {
@@ -162,7 +207,7 @@ const ListingDetailModal = ({
           onClick: async () => {
             try {
               await onDelete(listingId);
-              onClose(); // Close modal after delete
+              onClose();
             } catch (error) {
               console.error('Delete failed:', error);
             }
@@ -178,32 +223,105 @@ const ListingDetailModal = ({
     setShowOptions(false);
   };
 
-  const formatPrice = (amount, currency = 'LKR') => {
-    if (!amount) return null;
-    if (currency === 'LKR') {
-      return `Rs. ${Number(amount).toLocaleString('en-LK')}`;
+  const handleReport = () => {
+    setShowOptions(false);
+    if (!currentUser) {
+      toast.error('Please login to report listings');
+      return;
     }
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency,
-      minimumFractionDigits: 0,
-    }).format(amount);
+    setShowReportModal(true);
   };
 
-  const formatDate = (dateString) => {
-    if (!dateString) return '';
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
+  // ===== SHARE HANDLERS =====
+
+  const handleShareClick = () => {
+    setShowShareMenu(!showShareMenu);
   };
 
-  const getDimensions = () => {
-    if (!listing) return null;
-    const dims = [listing.lengthMm, listing.widthMm, listing.depthMm].filter(Boolean);
-    if (dims.length === 0) return null;
-    return dims.join(' × ') + ' mm';
+  const handleShareExternal = async () => {
+    setShowShareMenu(false);
+
+    const shareUrl = `${window.location.origin}/listing/${listingId}`;
+    const gemstoneType = getValue(listing?.gemstoneType);
+    const shareData = {
+      title: listing?.title,
+      text: `Check out this ${gemstoneType || 'gemstone'}: ${listing?.title} - ${formattedPrice}`,
+      url: shareUrl,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(shareUrl);
+        toast.success('Link copied to clipboard!');
+      }
+    } catch (error) {
+      if (error.name !== 'AbortError') {
+        await navigator.clipboard.writeText(shareUrl);
+        toast.success('Link copied to clipboard!');
+      }
+    }
+  };
+
+  const handleShareToChat = () => {
+    setShowShareMenu(false);
+
+    if (!currentUser) {
+      toast.error('Please login to share listings');
+      return;
+    }
+
+    const gemstoneType = getValue(listing?.gemstoneType);
+    const firstImageUrl = images[0] || listing?.primaryImageUrl || null;
+
+    if (typeof onShareToChat === 'function') {
+      onShareToChat({
+        listing: {
+          id: listingId,
+          title: listing?.title,
+          price: listing?.price,
+          currency: listing?.currency,
+          formattedPrice,
+          imageUrl: firstImageUrl,
+          gemstoneType,
+        }
+      });
+    } else {
+      toast.info('Share to chat coming soon!');
+    }
+  };
+
+  // ===== INQUIRE HANDLER =====
+
+  const handleInquire = () => {
+    if (!currentUser) {
+      toast.error('Please login to send inquiries');
+      return;
+    }
+
+    const sellerId = listing?.sellerId || listing?.seller?.id;
+    const sellerName = listing?.sellerName || listing?.seller?.username || listing?.seller?.displayName;
+    const sellerAvatar = listing?.sellerAvatar || listing?.seller?.avatarUrl;
+    const gemstoneType = getValue(listing?.gemstoneType);
+    const firstImageUrl = images[0] || listing?.primaryImageUrl || null;
+
+    if (typeof onInquire === 'function') {
+      onInquire({
+        sellerId,
+        sellerName,
+        sellerAvatar,
+        listing: {
+          id: listingId,
+          title: listing?.title,
+          price: listing?.price,
+          currency: listing?.currency,
+          formattedPrice,
+          imageUrl: firstImageUrl,
+          gemstoneType,
+        }
+      });
+    }
   };
 
   // Extract display values
@@ -218,7 +336,7 @@ const ListingDetailModal = ({
   const sellerName = listing?.sellerName || listing?.seller?.username || listing?.seller?.displayName || 'Seller';
   const sellerAvatar = listing?.sellerAvatar || listing?.seller?.avatarUrl;
 
-  // Build specs array for cleaner rendering
+  // Build specs array
   const specs = [
     { label: 'Carat Weight', value: listing?.caratWeight ? `${listing.caratWeight} ct` : null },
     { label: 'Color', value: color },
@@ -238,7 +356,11 @@ const ListingDetailModal = ({
         <CloseIcon size={28} />
       </button>
 
-      <div className="listing-modal" onClick={(e) => e.stopPropagation()}>
+      <div className="listing-modal" onClick={(e) => {
+        e.stopPropagation();
+        // Close share menu when clicking anywhere inside modal but outside menu
+        if (showShareMenu) setShowShareMenu(false);
+      }}>
         {loading ? (
           <div className="listing-modal-loading">
             <LoadingSpinner message="Loading..." />
@@ -319,7 +441,6 @@ const ListingDetailModal = ({
                       <div className="options-backdrop" onClick={() => setShowOptions(false)} />
                       <div className="listing-modal-options-menu">
                         {isOwner ? (
-                          // ✅ Owner Menu - Edit, Delete, Copy Link
                           <>
                             <button onClick={handleEdit}>
                               <EditIcon size={20} />
@@ -335,13 +456,12 @@ const ListingDetailModal = ({
                             </button>
                           </>
                         ) : (
-                          // ✅ Non-Owner Menu - Copy Link, Report
                           <>
                             <button onClick={handleCopyLink}>
                               <LinkIcon size={20} />
                               <span>Copy Link</span>
                             </button>
-                            <button className="danger">
+                            <button className="danger" onClick={handleReport}>
                               <ReportIcon size={20} />
                               <span>Report Listing</span>
                             </button>
@@ -355,15 +475,12 @@ const ListingDetailModal = ({
 
               {/* Scrollable Body */}
               <div className="listing-modal-body">
-                {/* Title */}
                 <h2 className="listing-modal-title">{listing.title}</h2>
                 
-                {/* Price */}
                 <div className="listing-modal-price">
-                  {formatPrice(listing.price, listing.currency)}
+                  {formattedPrice}
                 </div>
 
-                {/* Gemstone Type & Certified */}
                 <div className="listing-modal-type">
                   <span className="type-name">{gemstoneType || 'Gemstone'}</span>
                   {listing.isCertified && (
@@ -373,7 +490,6 @@ const ListingDetailModal = ({
                   )}
                 </div>
 
-                {/* Specs Grid */}
                 {specs.length > 0 && (
                   <div className="listing-modal-specs">
                     {specs.map((spec, index) => (
@@ -385,7 +501,6 @@ const ListingDetailModal = ({
                   </div>
                 )}
 
-                {/* Description */}
                 {listing.description && (
                   <div className="listing-modal-section">
                     <h4>Description</h4>
@@ -393,7 +508,6 @@ const ListingDetailModal = ({
                   </div>
                 )}
 
-                {/* Certificate Info */}
                 {listing.certificateInfo && (
                   <div className="listing-modal-section">
                     <h4>Certificate</h4>
@@ -401,7 +515,6 @@ const ListingDetailModal = ({
                   </div>
                 )}
 
-                {/* Posted Date */}
                 {listing.createdAt && (
                   <div className="listing-modal-date">
                     Posted on {formatDate(listing.createdAt)}
@@ -409,9 +522,10 @@ const ListingDetailModal = ({
                 )}
               </div>
 
-              {/* ✅ Actions Footer - Only Like, Save, Share */}
+              {/* Actions Footer */}
               <div className="listing-modal-actions">
                 <div className="actions-row">
+                  {/* Like */}
                   <button
                     className={`action-btn ${isLiked ? 'liked' : ''}`}
                     onClick={handleLike}
@@ -419,19 +533,49 @@ const ListingDetailModal = ({
                   >
                     {isLiked ? <HeartFilledIcon size={28} /> : <HeartOutlineIcon size={28} />}
                   </button>
+
+                  {/* Inquire — only for non-owners */}
+                  {!isOwner && onInquire && (
+                    <button
+                      className="action-btn"
+                      onClick={handleInquire}
+                      title="Inquire"
+                    >
+                      <CommentIcon size={28} />
+                    </button>
+                  )}
+
+                  {/* Share with dropdown */}
+                  <div className="share-btn-wrapper" onClick={(e) => e.stopPropagation()}>
+                    <button 
+                      className="action-btn"
+                      onClick={handleShareClick}
+                      title="Share"
+                    >
+                      <ShareIcon size={28} />
+                    </button>
+
+                    {showShareMenu && (
+                      <div className="share-menu">
+                        <button className="share-menu-item" onClick={handleShareToChat}>
+                          <MessageIcon size={18} />
+                          <span>Send to Chat</span>
+                        </button>
+                        <button className="share-menu-item" onClick={handleShareExternal}>
+                          <LinkIcon size={18} />
+                          <span>Copy Link</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Save */}
                   <button 
                     className={`action-btn ${isSaved ? 'saved' : ''}`} 
                     onClick={handleSave}
                     title="Save"
                   >
                     {isSaved ? <BookmarkFilledIcon size={28} /> : <BookmarkIcon size={28} />}
-                  </button>
-                  <button 
-                    className="action-btn"
-                    onClick={handleCopyLink}
-                    title="Share"
-                  >
-                    <ShareIcon size={28} />
                   </button>
                 </div>
                 
@@ -450,6 +594,17 @@ const ListingDetailModal = ({
           </div>
         )}
       </div>
+
+      {/* Report Modal */}
+      {showReportModal && (
+        <ReportModal
+          isOpen={showReportModal}
+          onClose={() => setShowReportModal(false)}
+          reportType="LISTING"
+          targetId={listingId}
+          targetTitle={listing?.title || 'Listing'}
+        />
+      )}
     </div>
   );
 };
@@ -541,6 +696,18 @@ const ShareIcon = ({ size = 24 }) => (
     <circle cx="18" cy="19" r="3" />
     <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
     <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+  </svg>
+);
+
+const CommentIcon = ({ size = 24 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+  </svg>
+);
+
+const MessageIcon = ({ size = 24 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
   </svg>
 );
 

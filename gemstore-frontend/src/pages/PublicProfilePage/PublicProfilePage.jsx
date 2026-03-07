@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+// import { toast } from 'sonner';
 import usePublicProfile from '../../hooks/usePublicProfile';
+import { toggleLike, toggleFavorite } from '../../api/listings';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import AlertMessage from '../../components/common/AlertMessage';
 import ReportModal from '../../components/report/ReportModal';
+import ListingDetailModal from '../../components/listing/ListingDetailModal';
 import './PublicProfilePage.css';
 
 const PublicProfilePage = ({ currentUser, userId: propUserId, onBack, onMessage }) => {
@@ -14,6 +17,10 @@ const PublicProfilePage = ({ currentUser, userId: propUserId, onBack, onMessage 
 
   // Report modal state
   const [showReportModal, setShowReportModal] = useState(false);
+
+  // Listing Detail Modal state
+  const [selectedListingId, setSelectedListingId] = useState(null);
+  const [showListingModal, setShowListingModal] = useState(false);
 
   const {
     profile,
@@ -71,9 +78,39 @@ const PublicProfilePage = ({ currentUser, userId: propUserId, onBack, onMessage 
     setShowReportModal(true);
   };
 
+  // Open listing detail modal instead of navigating
   const handleListingClick = (listingId) => {
-    navigate(`/listing/${listingId}`);
+    setSelectedListingId(listingId);
+    setShowListingModal(true);
   };
+
+  // Close listing detail modal
+  const handleCloseListingModal = () => {
+    setShowListingModal(false);
+    setSelectedListingId(null);
+  };
+
+  // Toggle like — same pattern as ProfilePage
+  const handleLike = useCallback(async (listingId) => {
+    try {
+      const response = await toggleLike(listingId);
+      return response?.data?.isLiked ?? response?.isLiked;
+    } catch (error) {
+      console.error('Failed to toggle like:', error);
+      throw error;
+    }
+  }, []);
+
+  // Toggle favorite — same pattern as ProfilePage
+  const handleFavorite = useCallback(async (listingId) => {
+    try {
+      const response = await toggleFavorite(listingId);
+      return response?.data?.isFavorited ?? response?.isFavorited;
+    } catch (error) {
+      console.error('Failed to toggle favorite:', error);
+      throw error;
+    }
+  }, []);
 
   // Loading state
   if (loading) {
@@ -122,6 +159,18 @@ const PublicProfilePage = ({ currentUser, userId: propUserId, onBack, onMessage 
         loading={listingsLoading}
         onListingClick={handleListingClick}
       />
+
+      {/* Listing Detail Modal — Like & Save only, no Edit/Delete */}
+      {showListingModal && selectedListingId && (
+        <ListingDetailModal
+          listingId={selectedListingId}
+          isOpen={showListingModal}
+          onClose={handleCloseListingModal}
+          currentUser={currentUser}
+          onLike={handleLike}
+          onSave={handleFavorite}
+        />
+      )}
 
       {/* Report Modal */}
       {showReportModal && (
