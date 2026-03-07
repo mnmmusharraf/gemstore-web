@@ -5,7 +5,12 @@ import EmptyState from './EmptyState';
 import { useMessages } from '../../hooks/useMessages';
 import './MessagesSection.css';
 
-function MessagesSection({ onMessagesRead, onUserClick }) {  // ✅ Add onUserClick prop
+function MessagesSection({ 
+  onMessagesRead, 
+  onUserClick, 
+  inquiryData, 
+  onInquiryHandled 
+}) {
   const {
     conversations,
     activeConversation,
@@ -14,49 +19,137 @@ function MessagesSection({ onMessagesRead, onUserClick }) {  // ✅ Add onUserCl
     sending,
     typingUsers,
     isConnected,
+    conversationsLoaded,
     selectConversation,
     sendMessage,
     sendTyping,
   } = useMessages();
 
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [pendingListing, setPendingListing] = useState(null);
+  const [pendingMessage, setPendingMessage] = useState('');
+  const [processedInquiryKey, setProcessedInquiryKey] = useState(null);
 
   // Clear unread count when component mounts
   useEffect(() => {
     onMessagesRead?.();
   }, [onMessagesRead]);
 
+  // Process inquiry data
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (!inquiryData || !inquiryData.sellerId || !conversationsLoaded) {
+      return;
+    }
+
+    const inquiryKey = `${inquiryData.sellerId}-${inquiryData.listing?.id || 'direct'}`;
+    
+    if (processedInquiryKey === inquiryKey) {
+      return;
+    }
+
+    console.log('🚀 Processing inquiry:', inquiryKey);
+
+    const { sellerId, sellerName, sellerAvatar, listing, isDirectMessage } = inquiryData;
+
+    // ✅ Only set pending listing if there's a listing (not direct message)
+    if (listing && !isDirectMessage) {
+      setPendingListing(listing);
+      setPendingMessage('Is this still available?');
+    } else {
+      // Direct message - no pre-filled content
+      setPendingListing(null);
+      setPendingMessage('');
+    }
+
+    setProcessedInquiryKey(inquiryKey);
+
+    // Select conversation
+    const existingConversation = conversations.find(
+      (c) => Number(c.partnerId) === Number(sellerId)
+    );
+
+    if (existingConversation) {
+      selectConversation(existingConversation);
+    } else {
+      selectConversation({
+        partnerId: sellerId,
+        partnerUsername: sellerName,
+        partnerDisplayName: sellerName,
+        partnerAvatarUrl: sellerAvatar,
+        lastMessage: null,
+        lastMessageAt: new Date().toISOString(),
+        unreadCount: 0,
+        isNew: true,
+      });
+    }
+
+    // Clear parent's inquiry data
+    onInquiryHandled?.();
+
+  }, [inquiryData, conversationsLoaded, conversations]);
+
+  // Reset when inquiry data clears
+  useEffect(() => {
+    if (!inquiryData && processedInquiryKey) {
+      setProcessedInquiryKey(null);
+    }
+  }, [inquiryData, processedInquiryKey]);
+
   // Handle resize
   useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const isPartnerTyping = activeConversation 
-    ? typingUsers[activeConversation.partnerId] 
-    : false;
-
-  // Handle back button on mobile
-  const handleBack = () => {
-    selectConversation(null);
+  // ✅ Enhanced send message with listing data
+  const handleSendMessage = async (content, messageType = 'TEXT', listingId = null) => {
+    // If we have a pending listing, include it in the message
+    if (pendingListing && messageType === 'LISTING') {
+      const result = await sendMessage(content, 'LISTING', listingId, pendingListing);
+      return result;
+    }
+    return sendMessage(content, messageType, listingId);
   };
 
-  // ✅ Handle profile click - navigate to user's profile
+  const handleClearPendingListing = () => {
+    setPendingListing(null);
+    setPendingMessage('');
+  };
+
+  const handleClearPendingMessage = () => {
+    setPendingMessage('');
+  };
+
+  const handleBack = () => {
+    selectConversation(null);
+    setPendingListing(null);
+    setPendingMessage('');
+  };
+
   const handleProfileClick = () => {
     if (activeConversation && onUserClick) {
       onUserClick(activeConversation.partnerId);
     }
   };
 
+  const handleSelectConversation = (conv) => {
+    selectConversation(conv);
+    setPendingListing(null);
+    setPendingMessage('');
+  };
+
+  const isPartnerTyping = activeConversation
+    ? typingUsers[activeConversation.partnerId]
+    : false;
+
   return (
     <div className={`messages-layout ${activeConversation ? 'chat-open' : ''}`}>
       <ConversationList
         conversations={conversations}
         activeConversation={activeConversation}
-        onSelectConversation={selectConversation}
+        onSelectConversation={handleSelectConversation}
         loading={loading && conversations.length === 0}
       />
 
@@ -68,10 +161,14 @@ function MessagesSection({ onMessagesRead, onUserClick }) {  // ✅ Add onUserCl
           sending={sending}
           isTyping={isPartnerTyping}
           isConnected={isConnected}
-          onSendMessage={sendMessage}
+          onSendMessage={handleSendMessage}
           onTyping={sendTyping}
           onBack={isMobile ? handleBack : null}
-          onProfileClick={handleProfileClick}  // ✅ Pass profile click handler
+          onProfileClick={handleProfileClick}
+          pendingListing={pendingListing}
+          onClearPendingListing={handleClearPendingListing}
+          pendingMessage={pendingMessage}
+          onClearPendingMessage={handleClearPendingMessage}
         />
       ) : (
         <EmptyState />

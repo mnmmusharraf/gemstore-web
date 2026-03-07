@@ -7,13 +7,14 @@ import { toast } from "sonner";
 import useAuth from "./hooks/useAuth";
 
 import HomePage from "./pages/HomePage/HomePage";
-import ProfilePage from "./pages/ProfilePage/ProfilePage";
+import ListingEditPage from "./pages/ListingEditPage/ListingEditPage";
 
 import AuthLayout from "./components/auth/AuthLayout";
 import LoginForm from "./components/auth/forms/LoginForm";
 import RegisterForm from "./components/auth/forms/RegisterForm";
 import ForgotPasswordForm from "./components/auth/forms/ForgotPasswordForm";
 import Processing from "./components/common/Processing";
+
 
 function App() {
 
@@ -76,9 +77,10 @@ function App() {
 
   return (
     <Routes>
-      {/* ===== HOME ===== */}
+
+      {/* ===== HOME (with all nested routes) ===== */}
       <Route
-        path="/"
+        path="/*"
         element={
           currentUser ? (
             <HomePage currentUser={currentUser} onLogout={logout} />
@@ -147,8 +149,6 @@ function App() {
         }
       />
 
-      {/* ===== FALLBACK ===== */}
-      <Route path="*" element={<Navigate to="/" />} />
     </Routes>
   );
 }

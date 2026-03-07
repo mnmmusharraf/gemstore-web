@@ -1,15 +1,26 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+// import { toast } from 'sonner';
 import usePublicProfile from '../../hooks/usePublicProfile';
+import { toggleLike, toggleFavorite } from '../../api/listings';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import AlertMessage from '../../components/common/AlertMessage';
+import ReportModal from '../../components/report/ReportModal';
+import ListingDetailModal from '../../components/listing/ListingDetailModal';
 import './PublicProfilePage.css';
 
-const PublicProfilePage = ({ currentUser, userId:  propUserId, onBack }) => {
-  const { userId:  paramUserId } = useParams();
+const PublicProfilePage = ({ currentUser, userId: propUserId, onBack, onMessage }) => {
+  const { userId: paramUserId } = useParams();
   const navigate = useNavigate();
 
   const userId = propUserId || paramUserId;
+
+  // Report modal state
+  const [showReportModal, setShowReportModal] = useState(false);
+
+  // Listing Detail Modal state
+  const [selectedListingId, setSelectedListingId] = useState(null);
+  const [showListingModal, setShowListingModal] = useState(false);
 
   const {
     profile,
@@ -33,7 +44,7 @@ const PublicProfilePage = ({ currentUser, userId:  propUserId, onBack }) => {
 
   // Handlers
   const handleBack = () => {
-    onBack ?  onBack() : navigate(-1);
+    onBack ? onBack() : navigate(-1);
   };
 
   const handleFollowClick = async () => {
@@ -44,9 +55,62 @@ const PublicProfilePage = ({ currentUser, userId:  propUserId, onBack }) => {
     await toggleFollow();
   };
 
-  const handleListingClick = (listingId) => {
-    navigate(`/listing/${listingId}`);
+  const handleMessageClick = () => {
+    if (!currentUser) {
+      navigate('/login');
+      return;
+    }
+
+    if (typeof onMessage === 'function') {
+      onMessage({
+        recipientId: profile?.id || userId,
+        recipientName: profile?.displayName || profile?.username,
+        recipientAvatar: profile?.avatarUrl,
+      });
+    }
   };
+
+  const handleReportClick = () => {
+    if (!currentUser) {
+      navigate('/login');
+      return;
+    }
+    setShowReportModal(true);
+  };
+
+  // Open listing detail modal instead of navigating
+  const handleListingClick = (listingId) => {
+    setSelectedListingId(listingId);
+    setShowListingModal(true);
+  };
+
+  // Close listing detail modal
+  const handleCloseListingModal = () => {
+    setShowListingModal(false);
+    setSelectedListingId(null);
+  };
+
+  // Toggle like — same pattern as ProfilePage
+  const handleLike = useCallback(async (listingId) => {
+    try {
+      const response = await toggleLike(listingId);
+      return response?.data?.isLiked ?? response?.isLiked;
+    } catch (error) {
+      console.error('Failed to toggle like:', error);
+      throw error;
+    }
+  }, []);
+
+  // Toggle favorite — same pattern as ProfilePage
+  const handleFavorite = useCallback(async (listingId) => {
+    try {
+      const response = await toggleFavorite(listingId);
+      return response?.data?.isFavorited ?? response?.isFavorited;
+    } catch (error) {
+      console.error('Failed to toggle favorite:', error);
+      throw error;
+    }
+  }, []);
 
   // Loading state
   if (loading) {
@@ -84,6 +148,8 @@ const PublicProfilePage = ({ currentUser, userId:  propUserId, onBack }) => {
         isOwnProfile={isOwnProfile}
         currentUser={currentUser}
         onFollowClick={handleFollowClick}
+        onMessageClick={handleMessageClick}
+        onReportClick={handleReportClick}
         onBackClick={handleBack}
       />
 
@@ -93,6 +159,29 @@ const PublicProfilePage = ({ currentUser, userId:  propUserId, onBack }) => {
         loading={listingsLoading}
         onListingClick={handleListingClick}
       />
+
+      {/* Listing Detail Modal — Like & Save only, no Edit/Delete */}
+      {showListingModal && selectedListingId && (
+        <ListingDetailModal
+          listingId={selectedListingId}
+          isOpen={showListingModal}
+          onClose={handleCloseListingModal}
+          currentUser={currentUser}
+          onLike={handleLike}
+          onSave={handleFavorite}
+        />
+      )}
+
+      {/* Report Modal */}
+      {showReportModal && (
+        <ReportModal
+          isOpen={showReportModal}
+          onClose={() => setShowReportModal(false)}
+          reportType="USER"
+          targetId={profile?.id || userId}
+          targetTitle={profile?.displayName || profile?.username || 'User'}
+        />
+      )}
     </div>
   );
 };
@@ -106,8 +195,12 @@ const ProfileHeaderSection = ({
   isOwnProfile,
   currentUser,
   onFollowClick,
+  onMessageClick,
+  onReportClick,
   onBackClick,
 }) => {
+  const [showOptionsMenu, setShowOptionsMenu] = useState(false);
+
   const getFollowButtonText = () => {
     if (followLoading) return '...';
     if (followStatus === 'PENDING') return 'Requested';
@@ -126,7 +219,7 @@ const ProfileHeaderSection = ({
     <header className="public-profile-header">
       {/* Avatar */}
       <div className="public-profile-avatar">
-        {profile?. avatarUrl ? (
+        {profile?.avatarUrl ? (
           <img src={profile.avatarUrl} alt={profile.username} />
         ) : (
           <span className="public-profile-avatar-placeholder">
@@ -140,14 +233,78 @@ const ProfileHeaderSection = ({
         <div className="public-profile-username-row">
           <h1 className="public-profile-username">{profile?.username}</h1>
 
-          {currentUser && ! isOwnProfile && (
-            <button
-              className={getFollowButtonClass()}
-              onClick={onFollowClick}
-              disabled={followLoading}
-            >
-              {getFollowButtonText()}
-            </button>
+          {/* Action buttons for non-own profile */}
+          {currentUser && !isOwnProfile && (
+            <div className="public-profile-actions">
+              <button
+                className={getFollowButtonClass()}
+                onClick={onFollowClick}
+                disabled={followLoading}
+              >
+                {getFollowButtonText()}
+              </button>
+
+              {/* Message Button */}
+              <button
+                className="public-profile-message-btn"
+                onClick={onMessageClick}
+              >
+                <MessageIcon size={18} />
+                Message
+              </button>
+
+              {/* More Options Button */}
+              <div className="public-profile-options-wrapper">
+                <button
+                  className="public-profile-options-btn"
+                  onClick={() => setShowOptionsMenu(!showOptionsMenu)}
+                  title="More options"
+                >
+                  <MoreIcon size={20} />
+                </button>
+
+                {/* Options Dropdown */}
+                {showOptionsMenu && (
+                  <>
+                    <div 
+                      className="public-profile-options-backdrop"
+                      onClick={() => setShowOptionsMenu(false)}
+                    />
+                    <div className="public-profile-options-menu">
+                      <button
+                        className="public-profile-options-item report"
+                        onClick={() => {
+                          setShowOptionsMenu(false);
+                          onReportClick();
+                        }}
+                      >
+                        <ReportIcon size={18} />
+                        Report User
+                      </button>
+                      <button
+                        className="public-profile-options-item"
+                        onClick={() => {
+                          setShowOptionsMenu(false);
+                        }}
+                      >
+                        <BlockIcon size={18} />
+                        Block User
+                      </button>
+                      <button
+                        className="public-profile-options-item"
+                        onClick={() => {
+                          navigator.clipboard.writeText(window.location.href);
+                          setShowOptionsMenu(false);
+                        }}
+                      >
+                        <LinkIcon size={18} />
+                        Copy Profile URL
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
           )}
 
           <button className="public-profile-back-btn" onClick={onBackClick}>
@@ -155,7 +312,7 @@ const ProfileHeaderSection = ({
           </button>
         </div>
 
-        {/* Stats - Only show listings and followers (not following) */}
+        {/* Stats - Only listings and followers */}
         <div className="public-profile-stats">
           <div className="public-profile-stat">
             <strong>{listings.length}</strong>
@@ -165,7 +322,6 @@ const ProfileHeaderSection = ({
             <strong>{profile?.followersCount || 0}</strong>
             <span>followers</span>
           </div>
-          {/* Following count is hidden for other users' profiles */}
         </div>
 
         {/* Bio */}
@@ -177,7 +333,7 @@ const ProfileHeaderSection = ({
           {profile?.website && (
             <a
               href={
-                profile.website. startsWith('http')
+                profile.website.startsWith('http')
                   ? profile.website
                   : `https://${profile.website}`
               }
@@ -185,7 +341,7 @@ const ProfileHeaderSection = ({
               rel="noreferrer"
               className="public-profile-website"
             >
-              {profile. website. replace(/^https?:\/\//, '')}
+              {profile.website.replace(/^https?:\/\//, '')}
             </a>
           )}
         </div>
@@ -194,13 +350,59 @@ const ProfileHeaderSection = ({
   );
 };
 
+/* ===== ICONS ===== */
+const MessageIcon = ({ size = 24 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+  </svg>
+);
+
+const MoreIcon = ({ size = 24 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="1" />
+    <circle cx="19" cy="12" r="1" />
+    <circle cx="5" cy="12" r="1" />
+  </svg>
+);
+
+const ReportIcon = ({ size = 24 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
+    <line x1="4" y1="22" x2="4" y2="15" />
+  </svg>
+);
+
+const BlockIcon = ({ size = 24 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10" />
+    <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
+  </svg>
+);
+
+const LinkIcon = ({ size = 24 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+  </svg>
+);
+
+const GridIcon = ({ size = 24 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+    <rect x="3" y="3" width="7" height="7" />
+    <rect x="14" y="3" width="7" height="7" />
+    <rect x="3" y="14" width="7" height="7" />
+    <rect x="14" y="14" width="7" height="7" />
+  </svg>
+);
+
 /* ===== LISTINGS SECTION ===== */
 const ListingsSection = ({ listings, loading, onListingClick }) => {
   return (
     <section className="public-profile-content">
       <div className="public-profile-tabs">
         <button className="public-profile-tab active">
-          <span>💎</span> Listings
+          <GridIcon size={12} />
+          <span>LISTINGS</span>
         </button>
       </div>
 
