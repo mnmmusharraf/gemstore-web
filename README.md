@@ -1,99 +1,176 @@
-# GemStore Frontend
+<div align="center">
 
-React + Vite frontend for the GemStore marketplace.  
-It includes authentication, listing feed/search, profile & follow system, favorites/likes, messaging, notifications, reporting, and an AI price estimator.
+# 💎 GemStore Frontend
 
-## Tech Stack
+### AI-Powered Gemstone Marketplace — React Client
 
-- React 19
-- Vite 7
-- React Router 7
-- Bootstrap 5
-- STOMP + SockJS (real-time chat and notifications)
-- Sonner / React Toastify (toasts)
+![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react)
+![Vite](https://img.shields.io/badge/Vite-7-646CFF?style=flat-square&logo=vite)
+![React Router](https://img.shields.io/badge/React_Router-7-CA4245?style=flat-square&logo=reactrouter)
+![Bootstrap](https://img.shields.io/badge/Bootstrap-5-7952B3?style=flat-square&logo=bootstrap)
 
-## Features
+The React + Vite frontend for **GemStore** — a marketplace for buying and selling gemstones with real-time messaging, notifications, and an AI-powered price estimator.
 
-- Email/username login and registration
+[Related Repos](#-related-repositories) · [Getting Started](#-getting-started) · [Project Structure](#-project-structure) · [Configuration](#-configuration)
+
+</div>
+
+---
+
+## 📦 Related Repositories
+
+| Repository | Description |
+|---|---|
+| [gemstore-backend](https://github.com/mnmmusharraf/gemstore-backend) | Spring Boot backend API |
+| [gemstore-admin](https://github.com/mnmmusharraf/gemstore-admin) | React admin dashboard |
+| [gemstore-ml-service](https://github.com/mnmmusharraf/gemstore-ml-service) | FastAPI ML price prediction service |
+
+---
+
+## 🛠 Tech Stack
+
+| Category | Technology |
+|---|---|
+| Framework | React 19 + Vite 7 |
+| Routing | React Router 7 |
+| Styling | Bootstrap 5 + CSS variables (theme tokens) |
+| Real-time | STOMP over SockJS |
+| Notifications | Sonner / React Toastify |
+
+---
+
+## ✨ Features
+
+### Auth
+- Email / username login and registration
 - Google OAuth redirect flow
+- JWT token management with auto-logout on `401`
+
+### Marketplace
 - Gem listing feed with search and filters
 - Create and edit listings with image upload
-- User profiles (own + public) with follow/follower flows
-- Real-time messages with typing and status updates
-- Real-time notifications
-- Report listing/user/message flow
-- AI-powered gemstone price estimation
-- Light/dark theme tokens via `src/styles/theme.css`
+- Like and favorite listings
 
-## Project Structure
+### Social
+- Public and own user profiles
+- Follow / follower system
 
-```text
+### Messaging
+- Real-time chat with typing indicators
+- Message delivery status updates
+
+### Notifications
+- Real-time push notifications via WebSocket
+
+### Other
+- Report listings, users, and messages
+- AI-powered gemstone price estimator
+- Light / dark theme via CSS variable tokens
+
+---
+
+## 📁 Project Structure
+
+```
 src/
-  api/            # API clients and socket services
-  components/     # UI components (auth, feed, listing, messages, etc.)
-  context/        # Auth context/provider
-  hooks/          # Feature hooks (auth, feed, profile, messages, estimator...)
-  pages/          # Page-level containers
-  styles/         # Global styles and theme tokens
+├── api/              # API clients and WebSocket/STOMP services
+├── components/       # UI components
+│   ├── auth/         # Login, register, OAuth redirect
+│   ├── feed/         # Listing feed and search
+│   ├── listing/      # Listing create, edit, detail
+│   ├── messages/     # Chat UI and message threads
+│   └── ...           # Profile, notifications, reports, estimator
+├── context/          # Auth context and provider
+├── hooks/            # Feature hooks (auth, feed, profile, messages, estimator, ...)
+├── pages/            # Page-level route containers
+└── styles/
+    ├── theme.css     # Design tokens (CSS variables)
+    └── ...           # Global and component styles
 ```
 
-## Prerequisites
+---
 
-- Node.js 20+ (recommended)
-- npm 10+ (recommended)
-- GemStore backend running locally (default: `http://localhost:8080`)
+## 🚀 Getting Started
 
-## Getting Started
+### Prerequisites
+
+- Node.js 20+
+- npm 10+
+- [GemStore Backend](https://github.com/mnmmusharraf/gemstore-backend) running on `http://localhost:8080`
+
+---
+
+### 1. Clone the repository
 
 ```bash
-cd gemstore-frontend
+git clone https://github.com/mnmmusharraf/gemstore-web
+cd gemstore-web
+```
+
+### 2. Install dependencies
+
+```bash
 npm install
+```
+
+### 3. Start the dev server
+
+```bash
 npm run dev
 ```
 
-Open the app at the URL printed by Vite (usually `http://localhost:5173`).
+Open the URL printed by Vite — usually `http://localhost:5173`.
 
-## Available Scripts
+---
 
-- `npm run dev` - start local dev server
-- `npm run build` - create production build
-- `npm run preview` - preview production build locally
-- `npm run lint` - run ESLint
+## 📜 Available Scripts
 
-## Backend Configuration
+| Script | Description |
+|---|---|
+| `npm run dev` | Start local development server |
+| `npm run build` | Create production build |
+| `npm run preview` | Preview production build locally |
+| `npm run lint` | Run ESLint |
 
-This project currently uses hardcoded backend URLs:
+---
 
-- API base: `src/api/config.js` -> `API_BASE_URL`
-- Google OAuth redirect: `src/App.jsx` -> `handleGoogleSignIn()`
-- WebSocket endpoint: `${API_BASE_URL}/ws` (used by message/notification sockets)
+## ⚙️ Configuration
 
-Default backend URL:
+The app currently uses hardcoded backend URLs. Update these locations if your backend runs on a different host or port:
 
-```js
-http://localhost:8080
+| Setting | File | Default |
+|---|---|---|
+| API base URL | `src/api/config.js` → `API_BASE_URL` | `http://localhost:8080` |
+| Google OAuth redirect | `src/App.jsx` → `handleGoogleSignIn()` | `http://localhost:8080` |
+| WebSocket endpoint | Derived as `${API_BASE_URL}/ws` | `ws://localhost:8080/ws` |
+
+---
+
+## 🎨 Theme System
+
+`src/styles/theme.css` defines the visual design tokens as CSS custom properties.
+
+| Token | Description |
+|---|---|
+| `--bg`, `--bg-elevated` | Page and card backgrounds |
+| `--text-main`, `--text-muted` | Primary and secondary text |
+| `--primary`, `--primary-hover` | Action colors |
+| `--border-soft`, `--input-border` | Borders and inputs |
+
+Light and dark modes are handled automatically:
+
+```css
+:root { /* light theme defaults */ }
+
+@media (prefers-color-scheme: dark) { /* dark overrides */ }
 ```
 
-If your backend runs on a different host/port, update those locations.
+Use these variables in all component styles to maintain visual consistency across themes.
 
-## Theme Notes (`src/styles/theme.css`)
+---
 
-`theme.css` defines design tokens as CSS variables.
+## 🔒 Auth Notes
 
-- `:root` = light theme defaults
-- `@media (prefers-color-scheme: dark)` overrides for dark mode
-
-Examples of tokens:
-
-- Backgrounds: `--bg`, `--bg-elevated`
-- Text: `--text-main`, `--text-muted`
-- Primary actions: `--primary`, `--primary-hover`
-- Borders/inputs: `--border-soft`, `--input-border`
-
-Use these variables in component styles to keep visual consistency.
-
-## Notes
-
-- Auth token is stored in `localStorage` under key `authToken`.
-- On `401` responses, the app clears token and redirects to login flow.
-- Some API endpoint strings currently contain minor spacing inconsistencies; verify backend compatibility if a request fails.
+- JWT token is stored in `localStorage` under the key `authToken`
+- On any `401` response, the app clears the token and redirects to the login flow
+- Google OAuth uses a redirect-based flow handled in `src/App.jsx`
