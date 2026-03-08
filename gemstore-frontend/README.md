@@ -1,16 +1,99 @@
-# React + Vite
+# GemStore Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React + Vite frontend for the GemStore marketplace.  
+It includes authentication, listing feed/search, profile & follow system, favorites/likes, messaging, notifications, reporting, and an AI price estimator.
 
-Currently, two official plugins are available:
+## Tech Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- React 19
+- Vite 7
+- React Router 7
+- Bootstrap 5
+- STOMP + SockJS (real-time chat and notifications)
+- Sonner / React Toastify (toasts)
 
-## React Compiler
+## Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Email/username login and registration
+- Google OAuth redirect flow
+- Gem listing feed with search and filters
+- Create and edit listings with image upload
+- User profiles (own + public) with follow/follower flows
+- Real-time messages with typing and status updates
+- Real-time notifications
+- Report listing/user/message flow
+- AI-powered gemstone price estimation
+- Light/dark theme tokens via `src/styles/theme.css`
 
-## Expanding the ESLint configuration
+## Project Structure
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```text
+src/
+  api/            # API clients and socket services
+  components/     # UI components (auth, feed, listing, messages, etc.)
+  context/        # Auth context/provider
+  hooks/          # Feature hooks (auth, feed, profile, messages, estimator...)
+  pages/          # Page-level containers
+  styles/         # Global styles and theme tokens
+```
+
+## Prerequisites
+
+- Node.js 20+ (recommended)
+- npm 10+ (recommended)
+- GemStore backend running locally (default: `http://localhost:8080`)
+
+## Getting Started
+
+```bash
+cd gemstore-frontend
+npm install
+npm run dev
+```
+
+Open the app at the URL printed by Vite (usually `http://localhost:5173`).
+
+## Available Scripts
+
+- `npm run dev` - start local dev server
+- `npm run build` - create production build
+- `npm run preview` - preview production build locally
+- `npm run lint` - run ESLint
+
+## Backend Configuration
+
+This project currently uses hardcoded backend URLs:
+
+- API base: `src/api/config.js` -> `API_BASE_URL`
+- Google OAuth redirect: `src/App.jsx` -> `handleGoogleSignIn()`
+- WebSocket endpoint: `${API_BASE_URL}/ws` (used by message/notification sockets)
+
+Default backend URL:
+
+```js
+http://localhost:8080
+```
+
+If your backend runs on a different host/port, update those locations.
+
+## Theme Notes (`src/styles/theme.css`)
+
+`theme.css` defines design tokens as CSS variables.
+
+- `:root` = light theme defaults
+- `@media (prefers-color-scheme: dark)` overrides for dark mode
+
+Examples of tokens:
+
+- Backgrounds: `--bg`, `--bg-elevated`
+- Text: `--text-main`, `--text-muted`
+- Primary actions: `--primary`, `--primary-hover`
+- Borders/inputs: `--border-soft`, `--input-border`
+
+Use these variables in component styles to keep visual consistency.
+
+## Notes
+
+- Auth token is stored in `localStorage` under key `authToken`.
+- On `401` responses, the app clears token and redirects to login flow.
+- Some API endpoint strings currently contain minor spacing inconsistencies; verify backend compatibility if a request fails.
