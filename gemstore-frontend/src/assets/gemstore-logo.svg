@@ -1,0 +1,125 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="512" height="512">
+  <defs>
+    <linearGradient id="igGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%"   stop-color="#00C9A7"/>
+      <stop offset="40%"  stop-color="#00A8E8"/>
+      <stop offset="100%" stop-color="#0052D4"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="100" height="100" rx="22" ry="22" fill="url(#igGrad)"/>
+
+  <!--
+    5 EQUAL triangles △▽△▽△ in crown
+    
+    For equal triangle side lengths, all 5 triangles must be equilateral or at least isoceles same size.
+    
+    Crown height: from y=30 (top) to y=52 (girdle) = 22px tall
+    
+    The 5 triangles tile a trapezoid. For them all to be the same size,
+    we need equal base widths on top and bottom.
+
+    Let crown height h = 20 (y=32 to y=52)
+    For equilateral triangle: if base = b, height = b * sqrt(3)/2
+    h = 20 → b = 20 / (sqrt(3)/2) = 20 * 2/sqrt(3) = 23.1
+
+    So each triangle base = 23.1px
+
+    Top row has 3 triangle tips (△): at x = 20, 50, 80  → spacing = 30
+    Bot row has 2 valley tips (▽):  at x = 35, 65       → spacing = 30
+    Outer bot corners: x = 10, 90
+
+    Wait — for ALL triangles same size:
+    Each triangle base must equal same length.
+
+    Triangles:
+    T1△: base = (10,52)-(35,52), top tip = (20,32)   base=25, 
+    T2▽: base = (20,32)-(50,32), top = two pts, tip = (35,52)  base=30
+    
+    These won't be equal unless spacing is consistent.
+
+    For perfect equal triangles — all bases same length L:
+    Top points spaced L apart, bottom points spaced L apart, offset by L/2.
+
+    Let L = 30 (so 5 triangles fit in width 60 on top... but outer shape is wider)
+
+    Actually let's fit them inside the trapezoid properly.
+    Outer shape: top flat from x=20 to x=80 (width=60), girdle from x=10 to x=90 (width=80)
+    
+    Top flat width = 60, divide into 3 segments (for 3 △ tips including corners): 60/2 = spacing 30
+    Top tips (△): x = 20, 50, 80   (spacing 30)
+    
+    Bot valleys (▽) sit between top tips, offset 15 each side:
+    Bot valleys: x = 35, 65        (spacing 30, offset 15 from top tips)
+    
+    But outer bottom goes to x=10 and x=90.
+    So T1△ base is (10,52)→(35,52) = width 25 ≠ 30
+    And T5△ base is (65,52)→(90,52) = width 25 ≠ 30
+
+    To make ALL equal: outer girdle corners must also be at offset L/2 from top corners.
+    Top left corner = 20, so girdle left = 20 - 15 = 5... too close to edge.
+
+    COMPROMISE — make the 3 inner triangles (T2▽, T3△, T4▽) perfect equal,
+    and T1△ / T5△ mirror each other (same size as each other, slightly different).
+
+    OR — shift outer shape so girdle corners ARE at correct positions:
+    Top: 20, 50, 80  → girdle corners at 20-15=5 and 80+15=95 — outside viewbox
+
+    BEST SOLUTION: use L=20, adjust all coordinates:
+    Top tips:     30, 50, 70   (spacing 20, y=33)
+    Bot valleys:  40, 60       (spacing 20, offset 10, y=53)
+    Bot outer:    20, 80       (= 30-10, 70+10, y=53)
+
+    Triangle side check (equilateral with base=20, height=17.3):
+    h = 20*sqrt(3)/2 = 17.32  → crown height = 17.32, so y_top=53-17=36... 
+    Let's use h=17, top y=36, girdle y=53.
+
+    T1△: (20,53)-(40,53)-(30,36)  base=20 ✓, height=17 ✓
+    T2▽: (30,36)-(50,36)-(40,53)  base=20 ✓, height=17 ✓
+    T3△: (40,53)-(60,53)-(50,36)  base=20 ✓, height=17 ✓
+    T4▽: (50,36)-(70,36)-(60,53)  base=20 ✓, height=17 ✓
+    T5△: (60,53)-(80,53)-(70,36)  base=20 ✓, height=17 ✓
+
+    ALL EQUAL PERFECT TRIANGLES ✓
+
+    Outer shape: top from (30,36) to (70,36), sides to (20,53) and (80,53), down to tip (50,85)
+    
+    Pavilion: 2 lines only (no middle):
+    (40,53) → (50,85)
+    (60,53) → (50,85)
+  -->
+
+  <!-- OUTER DIAMOND SHAPE -->
+  <polygon
+    points="30,36 70,36 80,53 50,85 20,53"
+    fill="none"
+    stroke="white"
+    stroke-width="4"
+    stroke-linejoin="round"
+  />
+
+  <!-- Girdle horizontal line -->
+  <line x1="20" y1="53" x2="80" y2="53"
+        stroke="white" stroke-width="4" stroke-linecap="round"/>
+
+  <!-- Crown internal lines for 5 equal triangles △▽△▽△ -->
+  <!-- Left valley divider -->
+  <line x1="30" y1="36" x2="40" y2="53"
+        stroke="white" stroke-width="4" stroke-linecap="round"/>
+  <!-- Center-left peak -->
+  <line x1="50" y1="36" x2="40" y2="53"
+        stroke="white" stroke-width="4" stroke-linecap="round"/>
+  <!-- Center-right valley -->
+  <line x1="50" y1="36" x2="60" y2="53"
+        stroke="white" stroke-width="4" stroke-linecap="round"/>
+  <!-- Right valley divider -->
+  <line x1="70" y1="36" x2="60" y2="53"
+        stroke="white" stroke-width="4" stroke-linecap="round"/>
+
+  <!-- Pavilion: 2 lines only (no middle), aligned to valley points -->
+  <line x1="40" y1="53" x2="50" y2="85"
+        stroke="white" stroke-width="4" stroke-linecap="round"/>
+  <line x1="60" y1="53" x2="50" y2="85"
+        stroke="white" stroke-width="4" stroke-linecap="round"/>
+
+</svg>
