@@ -1,8 +1,16 @@
+import { Outlet, useLocation } from "react-router-dom";
 import Logo from "./Logo";
 import Subtitle from "./Subtitle";
 import ErrorMessage from "./ErrorMessage";
 
-export default function AuthLayout({ mode, errorMessage, children }) {
+export default function AuthLayout({ errorMessage }) {
+  const location = useLocation();
+
+  // Figure out the mode based on the current URL
+  let mode = "login";
+  if (location.pathname === "/register") mode = "register";
+  if (location.pathname === "/forgot-password") mode = "forgot";
+
   return (
     <div className="ig-root">
       <div className="ig-single-layout">
@@ -13,7 +21,9 @@ export default function AuthLayout({ mode, errorMessage, children }) {
 
           {errorMessage && <ErrorMessage text={errorMessage} />}
 
-          {children}
+          {/* <Outlet /> acts as a placeholder. React Router injects the correct form here */}
+          <Outlet />
+          
         </div>
 
         <div className="ig-footer">
